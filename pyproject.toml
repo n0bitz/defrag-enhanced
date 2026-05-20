@@ -1,0 +1,18 @@
+[project]
+name = "defrag-enhanced"
+version = "0.0.1"
+description = "DeFRaG + Enhancements"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "quatch",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.13",
+]
+
+[tool.uv.sources]
+quatch = { git = "https://github.com/birdstakes/quatch.git" }

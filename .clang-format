@@ -1,0 +1,14 @@
+BasedOnStyle: Google
+IndentWidth: 4
+DerivePointerAlignment: false
+PointerAlignment: Left
+QualifierAlignment: Left
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterFunction: true
+  AfterControlStatement: Never
+  BeforeElse: false
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortFunctionsOnASingleLine: All
+SortIncludes: false
+CommentPragmas: '(@copydoc|@copybrief|@see|@overload|@snippet)'

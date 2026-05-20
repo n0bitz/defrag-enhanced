@@ -1,0 +1,4 @@
+-isystem
+src/sdk/cgame
+-isystem
+src/sdk/game

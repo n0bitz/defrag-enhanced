@@ -1,0 +1,52 @@
+repos:
+  - repo: local
+    hooks:
+      - id: uv-lock
+        name: uv-lock
+        description: "Automatically run 'uv lock' on your project dependencies"
+        entry: uv lock
+        language: python
+        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
+        args: []
+        pass_filenames: false
+        additional_dependencies: []
+        minimum_pre_commit_version: "2.9.2"
+
+      - id: uv-sync
+        name: uv-sync
+        description: "Automatically run 'uv sync' on your repository after a checkout, pull or rebase"
+        entry: uv sync --no-active
+        args: ["--locked"]
+        language: python
+        always_run: true
+        pass_filenames: false
+        stages: [post-checkout, post-merge, post-rewrite]
+        minimum_pre_commit_version: "2.9.2"
+
+      - id: ruff-check
+        name: ruff check
+        description: "Run 'ruff check' for extremely fast Python linting"
+        entry: uv run ruff check --force-exclude
+        language: python
+        types_or: [python, pyi, jupyter]
+        args: []
+        require_serial: true
+        additional_dependencies: []
+        minimum_pre_commit_version: "2.9.2"
+
+      - id: ruff-format
+        name: ruff format
+        description: "Run 'ruff format' for extremely fast Python formatting"
+        entry: uv run ruff format --force-exclude
+        language: python
+        types_or: [python, pyi, jupyter]
+        args: []
+        require_serial: true
+        additional_dependencies: []
+        minimum_pre_commit_version: "2.9.2"
+
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v22.1.5
+    hooks:
+    - id: clang-format
+      types_or: [c++, c]

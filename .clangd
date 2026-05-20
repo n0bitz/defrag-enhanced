@@ -1,0 +1,31 @@
+CompileFlags:
+  Add:
+    - "-DDEFRAG"
+    # complain about non ANSI Cisms please
+    - "-ansi"
+    - "-pedantic-errors"
+    # no idea if it can cause miscompiles for QVMs, better safe than sorry
+    - "-Wimplicit-function-declaration"
+    - "-Werror=implicit-function-declaration"
+    # lcc supports "//" comments
+    - "-Wno-comment"
+    # NOTE: sdk include dirs are in compile_flags.json instead, due to dir args
+    # being rooted per file here instead of a fixed dir like the project root...
+    # also, it's -isystem there instead of -I to stop clangd from complaining that
+    # those files have too many errors
+
+---
+
+If:
+  PathMatch:
+    - "src/sdk/.*"
+Diagnostics:
+  Suppress: "*"
+CompileFlags:
+  Remove:
+    - "-ansi"
+    - "-pedantic-errors"
+    - "-Wimplicit-function-declaration"
+    - "-Werror=implicit-function-declaration"
+  Add:
+    - "-ferror-limit=1"
