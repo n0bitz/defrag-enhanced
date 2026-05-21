@@ -15,6 +15,10 @@ CompileFlags:
     # also, it's -isystem there instead of -I to stop clangd from complaining that
     # those files have too many errors
 
+Diagnostics:
+  # Likely not useful since we just include a mega file like Q3 does (eg. cg_local.h)
+  UnusedIncludes: None
+
 ---
 
 If:
