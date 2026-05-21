@@ -1,5 +1,6 @@
 CompileFlags:
   Add:
+    - "-DQ3_VM"
     - "-DDEFRAG"
     # complain about non ANSI Cisms please
     - "-ansi"
@@ -9,7 +10,7 @@ CompileFlags:
     - "-Werror=implicit-function-declaration"
     # lcc supports "//" comments
     - "-Wno-comment"
-    # NOTE: sdk include dirs are in compile_flags.json instead, due to dir args
+    # NOTE: include dirs are in compile_flags.json instead, due to dir args
     # being rooted per file here instead of a fixed dir like the project root...
     # also, it's -isystem there instead of -I to stop clangd from complaining that
     # those files have too many errors
@@ -20,7 +21,7 @@ If:
   PathMatch:
     - "src/sdk/.*"
 Diagnostics:
-  Suppress: "*"
+  Suppress: ["*"]
 CompileFlags:
   Remove:
     - "-ansi"

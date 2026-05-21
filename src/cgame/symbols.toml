@@ -1,5 +1,4 @@
 [code]
-CG_Init = 0xdc1
 # ----------------------------- SYSCALLS -----------------------------
 trap_Print = -1
 trap_Error = -2
@@ -103,3 +102,6 @@ testPrintInt = -110
 testPrintFloat = -111
 acos = -112
 # --------------------------- SYSCALLS END ---------------------------
+
+[hooks]
+CG_Init = 0xdc1

@@ -1,5 +1,4 @@
 [code]
-G_InitGame = 0x2bb
 # ----------------------------- SYSCALLS -----------------------------
 trap_Printf = -1
 trap_Error = -2
@@ -195,3 +194,6 @@ trap_BotLibFreeSource = -580
 trap_BotLibReadToken = -581
 trap_BotLibSourceFileAndLine = -582
 # --------------------------- SYSCALLS END ---------------------------
+
+[hooks]
+G_InitGame = 0x2bb

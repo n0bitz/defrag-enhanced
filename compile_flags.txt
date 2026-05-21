@@ -1,3 +1,4 @@
+-Isrc/common
 -isystem
 src/sdk/cgame
 -isystem
