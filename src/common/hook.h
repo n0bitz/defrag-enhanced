@@ -1,5 +1,5 @@
-#ifndef __HOOK_HEADER_GUARD
-#define __HOOK_HEADER_GUARD
+#ifndef HOOK_HEADER_GUARD_
+#define HOOK_HEADER_GUARD_
 
 #ifndef HOOK_SUFFIX
 #define HOOK_SUFFIX _H00K
@@ -9,11 +9,11 @@
 #define ORIG_SUFFIX _OR161N4L
 #endif  // ORIG_SUFFIX
 
-#define _HOOK_LOCAL_CONCAT(a, b) a##b
-#define _HOOK_LOCAL_EVAL_THEN_CONCAT(a, b) _HOOK_LOCAL_CONCAT(a, b)
+#define HOOK_LOCAL_CONCAT_(a, b) a##b
+#define HOOK_LOCAL_EVAL_THEN_CONCAT_(a, b) HOOK_LOCAL_CONCAT_(a, b)
 
-#define HOOKED(name) _HOOK_LOCAL_EVAL_THEN_CONCAT(name, HOOK_SUFFIX)
-#define ORIGINAL(name) _HOOK_LOCAL_EVAL_THEN_CONCAT(name, ORIG_SUFFIX)
+#define HOOKED(name) HOOK_LOCAL_EVAL_THEN_CONCAT_(name, HOOK_SUFFIX)
+#define ORIGINAL(name) HOOK_LOCAL_EVAL_THEN_CONCAT_(name, ORIG_SUFFIX)
 
 // rather than introducing 3 different macros (hook, orig, both), it feels
 // simpler to just do both here anyways...
@@ -26,4 +26,4 @@
 #define DEFINE_HOOK(ret_type_and_name, param_list) \
     DECLARE_HOOK(ret_type_and_name, param_list)
 
-#endif  // __HOOK_HEADER_GUARD
+#endif  // HOOK_HEADER_GUARD_

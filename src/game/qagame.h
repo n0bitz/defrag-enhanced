@@ -1,7 +1,7 @@
-#ifndef __QAGAME_HEADER_GUARD
-#define __QAGAME_HEADER_GUARD
+#ifndef QAGAME_HEADER_GUARD_
+#define QAGAME_HEADER_GUARD_
 
 #include "hook.h"
 #include "g_local.h"
 
-#endif  // __QAGAME_HEADER_GUARD
+#endif  // QAGAME_HEADER_GUARD_
