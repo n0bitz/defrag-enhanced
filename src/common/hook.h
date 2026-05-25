@@ -1,12 +1,13 @@
 #ifndef HOOK_HEADER_GUARD_
 #define HOOK_HEADER_GUARD_
 
+// The builder will override these suffixes, the ifndefs are just for editors
 #ifndef HOOK_SUFFIX
-#define HOOK_SUFFIX _H00K
+#define HOOK_SUFFIX _H00K_
 #endif  // HOOK_SUFFIX
 
 #ifndef ORIG_SUFFIX
-#define ORIG_SUFFIX _OR161N4L
+#define ORIG_SUFFIX _OR16_
 #endif  // ORIG_SUFFIX
 
 #define HOOK_LOCAL_CONCAT_(a, b) a##b
