@@ -12,6 +12,7 @@ dependencies = [
 dev = [
     "pre-commit>=4.6.0",
     "ruff>=0.15.13",
+    "tomlkit>=0.15.0",
 ]
 
 [tool.uv.sources]
