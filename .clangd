@@ -10,6 +10,7 @@ CompileFlags:
     - "-Werror=implicit-function-declaration"
     # lcc supports "//" comments
     - "-Wno-comment"
+    - "-Wunused-variable"
     # NOTE: include dirs are in compile_flags.json instead, due to dir args
     # being rooted per file here instead of a fixed dir like the project root...
     # also, it's -isystem there instead of -I to stop clangd from complaining that
@@ -32,5 +33,6 @@ CompileFlags:
     - "-pedantic-errors"
     - "-Wimplicit-function-declaration"
     - "-Werror=implicit-function-declaration"
+    - "-Wunused-variable"
   Add:
     - "-ferror-limit=1"
