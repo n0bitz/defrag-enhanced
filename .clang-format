@@ -12,4 +12,7 @@ AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortFunctionsOnASingleLine: All
 SortIncludes: false
 InsertNewlineAtEOF: true
-CommentPragmas: '(@copydoc|@copybrief|@see|@overload|@snippet)'
+CommentPragmas: "(@copydoc|@copybrief|@see|@overload|@snippet)"
+Macros:
+  - "DEFINE_HOOK(a,b,c) = a b(c) {"
+  - "END_HOOK=}"
