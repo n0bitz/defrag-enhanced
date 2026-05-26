@@ -2,6 +2,11 @@ CompileFlags:
   Add:
     - "-DQ3_VM"
     - "-DDEFRAG"
+    # it's a keyword in modern C standards, and clangd isn't happy seeing
+    # the sdk headers use it... wouldn't care normally but it causes the
+    # linter to bail on our files because there were already too many
+    # errors...
+    - "-Dinline="
     # complain about non ANSI Cisms please
     - "-ansi"
     - "-pedantic-errors"
@@ -13,8 +18,6 @@ CompileFlags:
     - "-Wunused-variable"
     # NOTE: include dirs are in compile_flags.json instead, due to dir args
     # being rooted per file here instead of a fixed dir like the project root...
-    # also, it's -isystem there instead of -I to stop clangd from complaining that
-    # those files have too many errors
 
 Diagnostics:
   # Likely not useful since we just include a mega file like Q3 does (eg. cg_local.h)

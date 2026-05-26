@@ -1,5 +1,3 @@
 -Isrc/common
--isystem
-src/sdk/cgame
--isystem
-src/sdk/game
+-Isrc/sdk/cgame
+-Isrc/sdk/game
