@@ -18,13 +18,24 @@
 
 // rather than introducing 3 different macros (hook, orig, both), it feels
 // simpler to just do both here anyways...
-#define DECLARE_HOOK(ret_type_and_name, param_list) \
-    ORIGINAL(ret_type_and_name) param_list;         \
-    HOOKED(ret_type_and_name) param_list
+#define DECLARE_HOOK(ret_type, name, param_list) \
+    ret_type ORIGINAL(name) param_list;          \
+    ret_type HOOKED(name) param_list
 
 // the definition deliberately declares the original function, as most
 // hooks will probably eventually call the original function...
-#define DEFINE_HOOK(ret_type_and_name, param_list) \
-    DECLARE_HOOK(ret_type_and_name, param_list)
+#ifdef __LCC__
+#define DEFINE_HOOK(ret_type, name, param_list) \
+    DECLARE_HOOK(ret_type, name, param_list)    \
+    {
+#else
+#define DEFINE_HOOK(ret_type, name, param_list) \
+    DECLARE_HOOK(ret_type, name, param_list)    \
+    {                                           \
+        ret_type(*ORIGINAL(name)) param_list;
+
+#endif
+
+#define END_HOOK }
 
 #endif  // HOOK_HEADER_GUARD_
