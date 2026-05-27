@@ -47,7 +47,7 @@ char* CG_strdup(const char* string);
 //
 // cg_poi.c
 //
-void CG_AddTextPOI(vec3_t origin, const char* text, float max_dist);
+void CG_AddTextPOI(const vec3_t origin, const char* text, float max_dist);
 void CG_DrawPOIs(void);
 
 #endif  // CGAME_HEADER_GUARD_

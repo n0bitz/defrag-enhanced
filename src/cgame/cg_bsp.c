@@ -60,6 +60,27 @@ static int FindTargets(entity_t* src, entity_t** list, int max_count)
     return num_targets;
 }
 
+static void LinkTargets(void)
+{
+    entity_t* src;
+
+    for (src = entities; src != entities + num_entities; src++) {
+        int num_targets;
+
+        if (!src->target || !src->target[0]) continue;
+
+        num_targets = FindTargets(src, NULL, 0);
+        if (!num_targets) continue;
+
+        src->targets =
+            (entity_t**)CG_Alloc((num_targets + 1) * sizeof(src->targets[0]));
+        if (!src->targets) continue;
+
+        FindTargets(src, src->targets, num_targets);
+        src->targets[num_targets++] = NULL;
+    }
+}
+
 static void LoadModels(fileHandle_t f, lump_t* lump)
 {
     if (lump->filelen < 0 || lump->filelen > sizeof(models)) {
@@ -74,8 +95,7 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
 {
     static char entities_lump[512 * 1024];
     char* p = entities_lump;
-    entity_t *ent, *src, *dst;
-    int i, j, num_targets;
+    entity_t* ent;
 
     if (lump->filelen < 0 || lump->filelen > sizeof(entities_lump)) {
         Com_Printf("^3WARNING: bad entities lump size\n");
@@ -117,25 +137,13 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
         }
     }
 
-    for (src = entities; src != entities + num_entities; src++) {
-        if (!src->target || !src->target[0]) continue;
-
-        num_targets = FindTargets(src, NULL, 0);
-        if (!num_targets) continue;
-
-        src->targets = CG_Alloc((num_targets + 1) * sizeof(src->targets[0]));
-        if (!src->targets) continue;
-
-        FindTargets(src, src->targets, num_targets);
-        src->targets[num_targets++] = NULL;
-    }
+    LinkTargets();
 }
 
 void CG_LoadBSP(const char* filename)
 {
     dheader_t header;
     fileHandle_t f;
-    lump_t* lump;
 
     trap_FS_FOpenFile(filename, &f, FS_READ);
     trap_FS_Read(&header, sizeof(header), f);

@@ -12,7 +12,7 @@ static void DrawString(float x, float y, float width, float height, char* s,
 
     trap_R_SetColor(color);
     while (*s) {
-        int ch = *s++;
+        int ch = *(unsigned char*)s++;
         float frow = (ch >> 4) * 0.0625;
         float fcol = (ch & 15) * 0.0625;
         float size = 0.0625;
@@ -34,7 +34,7 @@ struct {
 
 static int num_text_pois;
 
-void CG_AddTextPOI(vec3_t origin, const char* text, float max_dist)
+void CG_AddTextPOI(const vec3_t origin, const char* text, float max_dist)
 {
     if (num_text_pois < MAX_POIS) {
         VectorCopy(origin, text_poi_list[num_text_pois].origin);
@@ -71,7 +71,6 @@ void CG_DrawPOIs(void)
 
         if (text_poi_list[i].text[0]) {
             vec4_t color = {1.0f, 1.0f, 1.0f, 1.0f};
-            vec3_t up = {0.0f, 0.0f, 1.0f}, forward = {0.0f, 1.0f, 0.0f};
             vec3_t o, t;
             float x, y, dx, dy, w, h;
             int len;
@@ -93,7 +92,7 @@ void CG_DrawPOIs(void)
                 color[3] = alpha;
                 len = CG_DrawStrlen(text_poi_list[i].text);
 
-                DrawString(320 + x - (len * w / 2), 240 + y - h / 2, w, h,
+                DrawString(320 + x - (len * w / 2), 240 + y - (h / 2), w, h,
                            text_poi_list[i].text, color);
             }
         }
