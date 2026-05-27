@@ -2,7 +2,7 @@
 
 static vec3_t text_origins[MAX_GENTITIES];
 
-static float DistanceToSegment(vec3_t point, vec3_t a, vec3_t b)
+static float DistanceToSegment(vec3_t point, const vec3_t a, const vec3_t b)
 {
     vec3_t aToPoint, aToB, closest;
     float fraction;

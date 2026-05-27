@@ -18,9 +18,11 @@
 
 // rather than introducing 3 different macros (hook, orig, both), it feels
 // simpler to just do both here anyways...
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define DECLARE_HOOK(ret_type, name, param_list) \
     ret_type ORIGINAL(name) param_list;          \
     ret_type HOOKED(name) param_list
+// NOLINTEND(bugprone-macro-parentheses)
 
 // The original function being declared during hook definition is intended,
 // as most hooks will probably eventually call the original function.
@@ -32,10 +34,12 @@
 // Shadow the original function with a function pointer inside the hook body to
 // generate a diagnostic if the original isn't used, as most hooks should
 // probably call the original at some point.
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define DEFINE_HOOK(ret_type, name, param_list) \
     DECLARE_HOOK(ret_type, name, param_list)    \
     {                                           \
         ret_type(*ORIGINAL(name)) param_list;
+// NOLINTEND(bugprone-macro-parentheses)
 
 #endif
 
