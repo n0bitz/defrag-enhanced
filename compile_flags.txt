@@ -1,3 +1,0 @@
--Isrc/common
--Isrc/sdk/cgame
--Isrc/sdk/game
