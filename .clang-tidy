@@ -1,0 +1,17 @@
+---
+
+# Until https://github.com/llvm/llvm-project/issues/192713 closes and 
+# clang-tidy is updated, please keep at least one clang-tidy check around so 
+# clang-diagnostics can run and bubble up to clang-tidy.
+Checks: >
+  -*,
+  performance-*,
+  clang-diagnostic-*
+
+ExtraArgs:
+  - -Wimplicit-function-declaration
+  - -Wunused-variable
+
+ExcludeHeaderFilterRegex: "src/sdk/.*"
+WarningsAsErrors: "*"
+FormatStyle: "file"

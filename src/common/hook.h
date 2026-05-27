@@ -22,13 +22,16 @@
     ret_type ORIGINAL(name) param_list;          \
     ret_type HOOKED(name) param_list
 
-// the definition deliberately declares the original function, as most
-// hooks will probably eventually call the original function...
-#ifdef __LCC__
+// The original function being declared during hook definition is intended,
+// as most hooks will probably eventually call the original function.
+#ifndef LINTER
 #define DEFINE_HOOK(ret_type, name, param_list) \
     DECLARE_HOOK(ret_type, name, param_list)    \
     {
 #else
+// Shadow the original function with a function pointer inside the hook body to
+// generate a diagnostic if the original isn't used, as most hooks should
+// probably call the original at some point.
 #define DEFINE_HOOK(ret_type, name, param_list) \
     DECLARE_HOOK(ret_type, name, param_list)    \
     {                                           \
