@@ -9,7 +9,7 @@ Checks: >
   -bugprone-narrowing-conversions,
   -bugprone-easily-swappable-parameters,
   -bugprone-implicit-widening-of-multiplication-result,
-  clang-diagnostic-*
+  clang-diagnostic-*,
   misc-*,
   -misc-include-cleaner,
   modernize-*,
