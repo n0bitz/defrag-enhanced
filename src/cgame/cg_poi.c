@@ -26,7 +26,7 @@ static void DrawString(float x, float y, float width, float height, char* s,
 #define MAX_POIS 1024
 #define MAX_POI_CHARS 64
 
-struct {
+static struct {
     vec3_t origin;
     char text[MAX_POI_CHARS];
     float max_dist;
@@ -44,7 +44,7 @@ void CG_AddTextPOI(const vec3_t origin, const char* text, float max_dist)
     }
 }
 
-void CG_ClearPOIs(void) { num_text_pois = 0; }
+static void CG_ClearPOIs(void) { num_text_pois = 0; }
 
 // should be called after rendering the scene and before drawing the hud
 void CG_DrawPOIs(void)

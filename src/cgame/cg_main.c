@@ -25,7 +25,7 @@ static int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
 CG_RegisterCvars
 =================
 */
-DEFINE_HOOK(void, CG_RegisterCvars, (void))
+DEFINE_HOOK(static void, CG_RegisterCvars, (void))
     int i;
     cvarTable_t* cv;
 
@@ -42,7 +42,7 @@ END_HOOK
 CG_UpdateCvars
 =================
 */
-DEFINE_HOOK(void, CG_UpdateCvars, (void))
+DEFINE_HOOK(static void, CG_UpdateCvars, (void))
     int i;
     cvarTable_t* cv;
 
@@ -58,7 +58,7 @@ END_HOOK
 CG_Init
 =================
 */
-DEFINE_HOOK(void, CG_Init,
+DEFINE_HOOK(static void, CG_Init,
             (int serverMessageNum, int serverCommandSequence, int clientNum))
     trap_Print("^0HELLO ^1WORLD ^7(CGAME)\n");
     ORIGINAL(CG_Init)(serverMessageNum, serverCommandSequence, clientNum);
