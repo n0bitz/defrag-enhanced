@@ -1,5 +1,7 @@
 [code]
 Com_Printf = 0x28f
+CG_Argv = 0x2ac
+UpdateTimer = 0x5fd7
 CG_DrawStrlen = 0x1d514
 strlen = 0x2f24d
 tan = 0x2f3f5
@@ -122,11 +124,14 @@ trap_Print = -1
 CG_RegisterCvars = 0xfb
 CG_UpdateCvars = 0x19e
 CG_Init = 0xdc1
-CG_DrawActive = 0x1ce20
 CG_Draw2D_df = 0x2a12
+CG_DrawActive = 0x1ce20
 CG_AddCEntity = 0x1f222
+CG_ConsoleCommand = 0x1ad89
+CG_InitConsoleCommands = 0x1adc7
 
 [data]
 bg_itemlist = 0x3748
 cg = 0xcfcc8
 cgs = 0xee75c
+timer_time = 0x11d77c
