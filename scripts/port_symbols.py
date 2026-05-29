@@ -94,18 +94,21 @@ def match_data(
 
 def port_symbols(a: Qvm, b: Qvm, symbols: tomlkit.TOMLDocument):
     function_matches = match_functions(a, b)
-    data_matches = match_data(a, b, symbols["data"].values(), function_matches)
 
-    for name, addr in symbols["code"].items():
-        if addr > 0:
-            symbols["code"][name] = tomlkit.value(hex(function_matches[addr]))
+    if code := symbols.get("code"):
+        for name, addr in code.items():
+            if addr > 0:
+                code[name] = tomlkit.value(hex(function_matches[addr]))
 
-    for name, addr in symbols["hooks"].items():
-        if addr > 0:
-            symbols["hooks"][name] = tomlkit.value(hex(function_matches[addr]))
+    if hooks := symbols.get("hooks"):
+        for name, addr in hooks.items():
+            if addr > 0:
+                hooks[name] = tomlkit.value(hex(function_matches[addr]))
 
-    for name, addr in symbols["data"].items():
-        symbols["data"][name] = tomlkit.value(hex(data_matches[addr]))
+    if data := symbols.get("data"):
+        data_matches = match_data(a, b, data.values(), function_matches)
+        for name, addr in data.items():
+            data[name] = tomlkit.value(hex(data_matches[addr]))
 
 
 def main():
