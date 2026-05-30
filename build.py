@@ -136,18 +136,9 @@ class Project:
 def generate_compile_commands(projects: list[Project]):
     print("INFO: Building compilation database...")
     compile_commands = []
-    seen = set()
     root_dir = str(Path(__file__).resolve().parent)
     for project in projects:
         for file in project.source_files:
-            if file in seen:
-                raise Exception(
-                    f'Multiple compilation definitions for "{file}" found... '
-                    "Might be time to add code to merge definitions or find "
-                    "a different solution altogether."
-                )
-            seen.add(file)
-
             arguments = ["clang", *project.cflags(for_build=False), file]
             compile_commands.append(
                 {"directory": root_dir, "file": file, "arguments": arguments}
