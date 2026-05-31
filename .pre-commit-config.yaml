@@ -1,17 +1,9 @@
+default_install_hook_types: [pre-commit, post-rewrite, post-merge, post-checkout]
+default_stages: [pre-commit, post-rewrite, post-merge]
+
 repos:
   - repo: local
     hooks:
-      - id: uv-lock
-        name: uv-lock
-        description: "Automatically run 'uv lock' on your project dependencies"
-        entry: uv lock
-        language: python
-        files: ^(uv\.lock|pyproject\.toml|uv\.toml)$
-        args: []
-        pass_filenames: false
-        additional_dependencies: []
-        minimum_pre_commit_version: "2.9.2"
-
       - id: uv-sync
         name: uv-sync
         description: "Automatically run 'uv sync' on your repository after a checkout, pull or rebase"
@@ -45,8 +37,23 @@ repos:
         additional_dependencies: []
         minimum_pre_commit_version: "2.9.2"
 
-  - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v22.1.5
+  # This should be before cpp-linter-hooks as that needs this
+  - repo: local
     hooks:
-    - id: clang-format
-      types_or: [c++, c]
+      - id: generate-compile-commands
+        name: generate compile_commands.json
+        entry: "uv run build.py compile-commands"
+        language: unsupported
+        always_run: true
+        pass_filenames: false
+        require_serial: true
+        fail_fast: true
+        stages: [pre-commit, post-rewrite, post-merge, post-checkout]
+
+  - repo: https://github.com/cpp-linter/cpp-linter-hooks
+    rev: v1.5.0
+    hooks:
+      - id: clang-format
+        args: [--style=file, --version=22.1] # Specifies version
+      - id: clang-tidy
+        args: [--checks=.clang-tidy, --version=22.1, --fix] # Specifies version
