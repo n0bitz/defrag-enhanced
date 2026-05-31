@@ -1,10 +1,6 @@
 import json
 import tomllib
-from argparse import (
-    ArgumentParser,
-    ArgumentDefaultsHelpFormatter,
-    BooleanOptionalAction,
-)
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from dataclasses import dataclass, KW_ONLY, field, InitVar
 from glob import glob
 from pathlib import Path
@@ -38,26 +34,25 @@ def main():
         ),
     ]
 
+    STEPS = [
+        COMPILE_COMMANDS_STEP := "compile-commands",
+        PK3_STEP := "pk3",
+    ]
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
-    # Both of these default to True so devs don't have to remember anything.
     parser.add_argument(
-        "--compile-commands",
-        action=BooleanOptionalAction,
-        default=True,
-        help="whether to build compile_commands.json",
-    )
-    parser.add_argument(
-        "--pk3",
-        action=BooleanOptionalAction,
-        default=True,
-        help="whether to build the QVMs and pk3",
+        "steps",
+        nargs="*",
+        choices=STEPS,
+        default=STEPS,
+        metavar="step",
+        help="step(s) to run",
     )
     args = parser.parse_args()
 
-    if args.compile_commands:
+    if COMPILE_COMMANDS_STEP in args.steps:
         generate_compile_commands(PROJECTS)
 
-    if args.pk3:
+    if PK3_STEP in args.steps:
         build(PROJECTS)
 
 
