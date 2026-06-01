@@ -150,4 +150,5 @@ void CG_LoadBSP(const char* filename)
 
     LoadModels(f, &header.lumps[LUMP_MODELS]);
     LoadEntities(f, &header.lumps[LUMP_ENTITIES]);
+    trap_FS_FCloseFile(f);
 }
