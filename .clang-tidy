@@ -22,7 +22,9 @@ Checks: >
   -readability-magic-numbers,
   -readability-uppercase-literal-suffix,
 
-ExtraArgs:
+# Ideally this should be ExtraArgs instead, maybe one day once this closes:
+# https://github.com/llvm/llvm-project/issues/88390
+ExtraArgsBefore:
   - -Wimplicit-function-declaration
   - -Wunused-variable
 

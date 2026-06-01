@@ -54,6 +54,6 @@ repos:
     rev: v1.5.0
     hooks:
       - id: clang-format
-        args: [--style=file, --version=22.1] # Specifies version
+        args: [--style=file, --version=22.1]
       - id: clang-tidy
-        args: [--checks=.clang-tidy, --version=22.1, --fix] # Specifies version
+        args: [--compile-commands=., --checks=.clang-tidy, --version=22.1, --fix, -fix-errors]
