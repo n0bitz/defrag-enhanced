@@ -73,9 +73,9 @@ consoleCommandStatus_t CG_RestoreState_f(void)
 
 void SaveCurrentState(saveState_t* out)
 {
-    int i;
     playerState_t* ps = &cg.snap->ps;
 
+    out->serverTime = cg.snap->serverTime;
     VectorCopy(ps->origin, out->origin);
     VectorCopy(ps->viewangles, out->viewangles);
     VectorCopy(ps->velocity, out->velocity);
@@ -87,23 +87,7 @@ void SaveCurrentState(saveState_t* out)
     out->weaponTime = ps->weaponTime;
     out->weapons = ps->stats[STAT_WEAPONS];
     memcpy(out->ammo, ps->ammo, sizeof(ps->ammo));
-    // Powerups are a bit special as they store the expiry level time.
-    // Thus, we save the delta time so that this state can be
-    // can be restored without the server needing to know what the
-    // server time of our current state was. However, powerups also
-    // happen to use 0 to indicate that we don't have the powerup at all.
-    // If we unconditionally take the data, once again
-    // TODO: revisit, maybe just save the damn servertime and get it over with
-    for (i = 0; i < MAX_POWERUPS; i++) {
-        out->powerups[i] = ps->powerups[i];
-        if (!out->powerups[i]) {
-            out->powerups[i] = -1;
-        } else if (i == PW_REDFLAG || i == PW_BLUEFLAG) {
-            out->powerups[i] = 1;
-        } else {
-            out->powerups[i] -= cg.snap->serverTime;
-        }
-    }
+    memcpy(out->powerups, ps->powerups, sizeof(ps->ammo));
     out->health = ps->stats[STAT_HEALTH];
     out->armor = ps->stats[STAT_ARMOR];
     out->frags = ps->persistant[PERS_SCORE];

@@ -18,17 +18,14 @@ void Cmd_RestoreState_f(gentity_t* ent)
     timers[ent - g_entities].time = state.timer_time;
     timers[ent - g_entities].timer_running = state.timer_running;
     ps->weapon = state.weapon;
-    for (i = 0; i < MAX_WEAPONS; i++) {
-        ps->ammo[i] = state.ammo[i];
-    }
+    memcpy(ps->ammo, state.ammo, sizeof(ps->ammo));
     for (i = 0; i < MAX_POWERUPS; i++) {
         ps->powerups[i] = state.powerups[i];
-        if (ps->powerups[i] == -1) {
-            ps->powerups[i] = 0;
-        } else if (i == PW_REDFLAG || i == PW_BLUEFLAG) {
+        if (ps->powerups[i] == 0) continue;
+        if (i == PW_REDFLAG || i == PW_BLUEFLAG) {
             ps->powerups[i] = INT_MAX;
         } else {
-            ps->powerups[i] += level.time;
+            ps->powerups[i] += level.time - state.serverTime;
         }
     }
     ent->health = state.health;

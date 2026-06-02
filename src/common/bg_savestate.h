@@ -4,6 +4,7 @@
 #include "q_shared.h"
 
 typedef struct {
+    int serverTime;
     vec3_t origin;
     vec3_t viewangles;
     vec3_t velocity;
