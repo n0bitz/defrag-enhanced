@@ -1,19 +1,5 @@
 #include "cgame.h"
 
-// This function is kinda fragile in that if defrag ever changes the
-// implementation of the underlying UpdateTimer to add/remove side-effects, we
-// might end up doing unintended stuff. I doubt defrag would ever change though,
-// so let's not care too much, since the alternative would be to reimplement the
-// decryption logic ourselves.
-static int GetTimerTime(snapshot_t* snap)
-{
-    int tmp = timer_time;
-    int time = UpdateTimer(snap, NULL);
-
-    timer_time = tmp;
-    return time;
-}
-
 consoleCommandStatus_t CG_SaveState_f(void)
 {
     char cvar_name[MAX_TOKEN_CHARS];
@@ -28,21 +14,42 @@ consoleCommandStatus_t CG_SaveState_f(void)
         return CON_CMD_HANDLED;
     }
 
-    SaveCurrentState(&state);
+    if (!SaveCurrentState(&state)) {
+        trap_Print("^1ERROR: Saving current state is not supported\n");
+        return CON_CMD_HANDLED;
+    }
+
     // TODO: LINTER_ASSERT that everything will fit into sizeof(restore_command)
     // somewhere
     Q_strncpyz(restore_command, RESTORE_COMMAND " ", sizeof(restore_command));
     SerializeSaveState(&state,
                        restore_command + sizeof(RESTORE_COMMAND " ") - 1);
     trap_Cvar_Set(cvar_name, restore_command);
+
     trap_Print("^2Saved\n");
     return CON_CMD_HANDLED;
 }
 
+// Command interceptor to restore some stuff client-side before forwarding the
+// command along to the server. Ideally the server would handle everything, and
+// nothing needs to be done here, but some stuff stuff is just inherently
+// client-side like the checkpoint history...
 consoleCommandStatus_t CG_RestoreState_f(void)
 {
     char serialized_state[MAX_TOKEN_CHARS];
     saveState_t state;
+
+    // NOTE: The server does more validation than here and can eventually reject
+    // the command while we already change stuff here anyway. While we can come
+    // up with some fancy design to keep them synced somehow, it's not really
+    // that important. Like, yeah you might switch weapons or restore cp while
+    // the server doesn't restore the rest. But, so what? What is important is
+    // that we don't try to restore stuff client side when cheats are off, lest
+    // it break normal gameplay somehow.
+    if (!sv_cheats) {
+        trap_Print("^1ERROR: Cheats are not enabled on this server\n");
+        return CON_CMD_HANDLED;
+    }
 
     trap_Argv(1, serialized_state, sizeof(serialized_state));
     if (serialized_state[0] == '\0') {
@@ -50,11 +57,11 @@ consoleCommandStatus_t CG_RestoreState_f(void)
         return CON_CMD_HANDLED;
     }
 
-    // TODO: CHECK SV_CHEATS AND BAIL..
-    // well you'd have to check everything that a server would cause otherwise
-    // you'd do stuff below which doesn't make sense
-
-    DeserializeSaveState(serialized_state, &state);
+    if (!DeserializeSaveState(serialized_state, &state)) {
+        // TODO: Our own print with levels and stuff mb?
+        trap_Print("^1ERROR: Corrupted/invalid savestate\n");
+        return CON_CMD_HANDLED;
+    }
 
     // If the currently equipped weapon is different from the one in the
     // savestate, the server will think the client is trying to weapon change
@@ -65,19 +72,37 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     // in the current ucmd to be consistent with the savestate.
     cg.weaponSelect = state.weapon;
     cg.weaponSelectTime = cg.time;  // probably isn't needed
+    // The ucmd set technically isn't needed as engines run console commands
+    // before draw active where cg.weaponSelect is ucmd set.
     trap_SetUserCmdValue(cg.weaponSelect, cg.zoomSensitivity);
 
     // let it go through so the server can do the actual restoring
     return CON_CMD_NOT_HANDLED;
 }
 
-void SaveCurrentState(saveState_t* out)
+// This function is kinda fragile in that if defrag ever changes the
+// implementation of the underlying UpdateTimer to add/remove side-effects, we
+// might end up doing unintended stuff. I doubt defrag would ever change though,
+// so let's not care too much, since the alternative would be to reimplement the
+// decryption logic ourselves.
+static int GetTimerTime(snapshot_t* snap)
+{
+    int tmp = timer_time;
+    int time = UpdateTimer(snap, NULL);
+
+    timer_time = tmp;
+    return time;
+}
+
+qboolean SaveCurrentState(saveState_t* out)
 {
     playerState_t* ps = &cg.snap->ps;
 
-    // TODO: probably more stuff needs to be masked out here?
-    // this should actually be masked out in server...
-    out->pm_flags = ps->pm_flags & ~PMF_FOLLOW;
+    if (ps->pm_type != PM_NORMAL) {
+        return qfalse;
+    }
+
+    out->pm_flags = ps->pm_flags;
     out->pm_time = ps->pm_time;
     VectorCopy(ps->origin, out->origin);
     VectorCopy(ps->velocity, out->velocity);
@@ -98,4 +123,6 @@ void SaveCurrentState(saveState_t* out)
     out->timer_time = GetTimerTime(cg.snap);
     // TODO: upstream a const for 2
     out->timer_running = !!(ps->stats[STAT_MISC] & 2);
+
+    return qtrue;
 }

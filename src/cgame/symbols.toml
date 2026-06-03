@@ -134,4 +134,5 @@ CG_InitConsoleCommands = 0x1adc7
 bg_itemlist = 0x3748
 cg = 0xcfcc8
 cgs = 0xee75c
+sv_cheats = 0x11d40c
 timer_time = 0x11d77c

@@ -29,7 +29,8 @@ typedef struct {
 } saveState_t;
 
 void SerializeSaveState(const saveState_t* state, char* out);
-void DeserializeSaveState(const char* buf, saveState_t* out);
+// Returns false if state is invalid.
+qboolean DeserializeSaveState(const char* str, saveState_t* out);
 
 // TODO: WHAT AM I TRYING TO DO HERE?
 #define RESTORE_COMMAND "restorestate"

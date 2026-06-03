@@ -77,11 +77,13 @@ void CG_DrawPOIs(void);
 //
 // cg_savestate.c
 //
-void SaveCurrentState(saveState_t* out);
+// Returns false if current state is not supported.
+qboolean SaveCurrentState(saveState_t* out);
 
 //
 // og df stuff that you don't know/care where to place
 //
+extern int sv_cheats;
 extern int timer_time;
 // Updates some global timer thingy if it changed between snap and prev and
 // returns the timer
