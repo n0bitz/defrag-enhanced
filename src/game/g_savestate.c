@@ -12,13 +12,20 @@ void Cmd_RestoreState_f(gentity_t* ent)
     // TODO: Validation
     DeserializeSaveState(stringifed_state, &state);
 
+    ps->pm_flags = state.pm_flags;
+    ps->pm_time = state.pm_time;
     VectorCopy(state.origin, origin);
-    VectorCopy(state.viewangles, viewangles);
     VectorCopy(state.velocity, velocity);
-    timers[ent - g_entities].time = state.timer_time;
-    timers[ent - g_entities].timer_running = state.timer_running;
-    ps->weapon = state.weapon;
-    memcpy(ps->ammo, state.ammo, sizeof(ps->ammo));
+    ps->weaponTime = state.weaponTime;
+    VectorCopy(state.viewangles, viewangles);
+    ent->health = state.health;
+    ps->stats[STAT_HEALTH] = state.health;
+    ps->stats[STAT_HOLDABLE_ITEM] = state.holdable;
+    ps->stats[STAT_WEAPONS] = state.weapons;
+    ps->stats[STAT_ARMOR] = state.armor;
+    ps->stats[STAT_JUMPTIME] = state.jump_time;
+    ps->stats[STAT_DJING] = state.djing;
+    ps->persistant[PERS_SCORE] = state.score;
     for (i = 0; i < MAX_POWERUPS; i++) {
         ps->powerups[i] = state.powerups[i];
         if (ps->powerups[i] == 0) continue;
@@ -28,17 +35,11 @@ void Cmd_RestoreState_f(gentity_t* ent)
             ps->powerups[i] += level.time - state.serverTime;
         }
     }
-    ent->health = state.health;
-    ps->stats[STAT_HEALTH] = state.health;
-    ps->stats[STAT_ARMOR] = state.armor;
-    ps->pm_flags = state.pm_flags;
-    ps->pm_time = state.pm_time;
+    memcpy(ps->ammo, state.ammo, sizeof(ps->ammo));
+    ps->weapon = state.weapon;
     ps->weaponstate = state.weaponstate;
-    ps->weaponTime = state.weaponTime;
-    ps->stats[STAT_WEAPONS] = state.weapons;
-    ps->persistant[PERS_SCORE] = state.frags;
-    ps->stats[STAT_JUMPTIME] = state.dj_time;
-    ps->stats[STAT_DJING] = state.djing;
+    timers[ent - g_entities].time = state.timer_time;
+    timers[ent - g_entities].timer_running = state.timer_running;
 
     DF_PlacePlayerTeleport(ent, origin, viewangles, velocity);
     trap_SendServerCommand(ent - g_entities, "print \"^3Restored\n\"");

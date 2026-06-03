@@ -4,25 +4,28 @@
 #include "q_shared.h"
 
 typedef struct {
-    int serverTime;
-    vec3_t origin;
-    vec3_t viewangles;
-    vec3_t velocity;
-    int timer_time;
-    qboolean timer_running;
-    int weapon;
-    int weaponstate;
-    int weaponTime;
-    int weapons;
-    int ammo[MAX_WEAPONS];
-    int powerups[MAX_POWERUPS];
-    int health;
-    int armor;
-    int frags;
+    // BEGIN ps stuff
     int pm_flags;
     int pm_time;
-    int dj_time;     // TODO: Rename?
-    qboolean djing;  // TODO: Rename?
+    vec3_t origin;
+    vec3_t velocity;
+    int weaponTime;
+    vec3_t viewangles;
+    int health;
+    int holdable;
+    int weapons;
+    int armor;
+    int jump_time;
+    qboolean djing;
+    int score;
+    int powerups[MAX_POWERUPS];
+    int ammo[MAX_WEAPONS];
+    int weapon;
+    int weaponstate;
+    // END ps stuff
+    int serverTime;
+    int timer_time;
+    qboolean timer_running;
 } saveState_t;
 
 void SerializeSaveState(const saveState_t* state, char* out);

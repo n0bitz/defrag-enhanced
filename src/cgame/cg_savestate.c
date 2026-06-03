@@ -75,26 +75,27 @@ void SaveCurrentState(saveState_t* out)
 {
     playerState_t* ps = &cg.snap->ps;
 
-    out->serverTime = cg.snap->serverTime;
-    VectorCopy(ps->origin, out->origin);
-    VectorCopy(ps->viewangles, out->viewangles);
-    VectorCopy(ps->velocity, out->velocity);
-    out->timer_time = GetTimerTime(cg.snap);
-    // TODO: upstream a const for 2
-    out->timer_running = !!(ps->stats[STAT_MISC] & 2);
-    out->weapon = ps->weapon;
-    out->weaponstate = ps->weaponstate;
-    out->weaponTime = ps->weaponTime;
-    out->weapons = ps->stats[STAT_WEAPONS];
-    memcpy(out->ammo, ps->ammo, sizeof(ps->ammo));
-    memcpy(out->powerups, ps->powerups, sizeof(ps->ammo));
-    out->health = ps->stats[STAT_HEALTH];
-    out->armor = ps->stats[STAT_ARMOR];
-    out->frags = ps->persistant[PERS_SCORE];
     // TODO: probably more stuff needs to be masked out here?
     // this should actually be masked out in server...
     out->pm_flags = ps->pm_flags & ~PMF_FOLLOW;
     out->pm_time = ps->pm_time;
-    out->dj_time = ps->stats[STAT_JUMPTIME];
+    VectorCopy(ps->origin, out->origin);
+    VectorCopy(ps->velocity, out->velocity);
+    out->weaponTime = ps->weaponTime;
+    VectorCopy(ps->viewangles, out->viewangles);
+    out->health = ps->stats[STAT_HEALTH];
+    out->holdable = ps->stats[STAT_HOLDABLE_ITEM];
+    out->weapons = ps->stats[STAT_WEAPONS];
+    out->armor = ps->stats[STAT_ARMOR];
+    out->jump_time = ps->stats[STAT_JUMPTIME];
     out->djing = ps->stats[STAT_DJING];
+    out->score = ps->persistant[PERS_SCORE];
+    memcpy(out->powerups, ps->powerups, sizeof(ps->ammo));
+    memcpy(out->ammo, ps->ammo, sizeof(ps->ammo));
+    out->weapon = ps->weapon;
+    out->weaponstate = ps->weaponstate;
+    out->serverTime = cg.snap->serverTime;
+    out->timer_time = GetTimerTime(cg.snap);
+    // TODO: upstream a const for 2
+    out->timer_running = !!(ps->stats[STAT_MISC] & 2);
 }
