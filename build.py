@@ -10,12 +10,13 @@ from zipfile import ZipFile
 
 
 def main():
+    COMMON_SOURCES = list(glob("src/common/*.c"))
     PROJECTS = [
         Project(
             name="cgame",
             init_point="CG_Init",
             symbols_path="src/cgame/symbols.toml",
-            source_files=list(glob("src/cgame/*.c")),
+            source_files=list(glob("src/cgame/*.c")) + COMMON_SOURCES,
             include_paths=[
                 "src/cgame",
                 "src/common",
@@ -29,7 +30,7 @@ def main():
             name="qagame",
             init_point="G_InitGame",
             symbols_path="src/game/symbols.toml",
-            source_files=list(glob("src/game/*.c")),
+            source_files=list(glob("src/game/*.c")) + COMMON_SOURCES,
             include_paths=["src/game", "src/common", "src/sdk/game"],
         ),
     ]

@@ -1,4 +1,8 @@
 [code]
+Com_Printf = 0x45a
+DF_PlacePlayerTeleport = 0x45f0
+strlen = 0x5bfc
+Q_stricmp = 0xaab7
 # ----------------------------- SYSCALLS -----------------------------
 trap_Printf = -1
 trap_Error = -2
@@ -197,3 +201,9 @@ trap_BotLibSourceFileAndLine = -582
 
 [hooks]
 G_InitGame = 0x2bb
+ClientCommand = 0x1f4ba
+
+[data]
+g_entities = 0x1b2f0
+level = 0x12a2f0
+timers = 0x1318dc
