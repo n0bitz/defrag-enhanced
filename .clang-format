@@ -13,6 +13,10 @@ AllowShortFunctionsOnASingleLine: All
 SortIncludes: false
 InsertNewlineAtEOF: true
 CommentPragmas: "(@copydoc|@copybrief|@see|@overload|@snippet)"
+Macros:
+  - DEFINE_HOOK(a,b,c)=a b c {
+# no idea if this is still needed since DEFINE_HOOK has a proper 
+# definition above, but things work and so I'm leaving it alone...
 MacroBlockBegin: "^DEFINE_HOOK$"
 MacroBlockEnd: "^END_HOOK$"
 # clang-format is broken, won't drop to next line unless this is < 4...
