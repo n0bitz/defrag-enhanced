@@ -1,5 +1,5 @@
 [code]
-Com_Printf = 0x45a # TODO: REMOVE
+Com_Printf = 0x45a
 DF_PlacePlayerTeleport = 0x45f0
 strlen = 0x5bfc
 Q_stricmp = 0xaab7

@@ -61,7 +61,7 @@ consoleCommandStatus_t CG_RestoreState_f(void)
 
     trap_Argv(1, serialized_state, sizeof(serialized_state));
     if (serialized_state[0] == '\0') {
-        Com_Printf("Usage: /%s <serialized save state>\n", CG_Argv(0));
+        Com_Printf("Usage: /%s <savestate>\n", CG_Argv(0));
         return CON_CMD_HANDLED;
     }
 
@@ -78,9 +78,8 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     // the exact opposite of what we want, so to prevent it, patch the weapon
     // in the current ucmd to be consistent with the savestate.
     cg.weaponSelect = state.weapon;
-    cg.weaponSelectTime = cg.time;  // probably isn't needed
     // The ucmd set technically isn't needed as engines run console commands
-    // before draw active where cg.weaponSelect is ucmd set.
+    // before draw active where cg.weaponSelect is ucmd set, but just in case.
     trap_SetUserCmdValue(cg.weaponSelect, cg.zoomSensitivity);
 
     // let it go through so the server can do the actual restoring
@@ -122,7 +121,7 @@ qboolean SaveCurrentState(saveState_t* out)
     out->jump_time = ps->stats[STAT_JUMPTIME];
     out->djing = ps->stats[STAT_DJING];
     out->score = ps->persistant[PERS_SCORE];
-    memcpy(out->powerups, ps->powerups, sizeof(ps->ammo));
+    memcpy(out->powerups, ps->powerups, sizeof(ps->powerups));
     memcpy(out->ammo, ps->ammo, sizeof(ps->ammo));
     out->weapon = ps->weapon;
     out->weaponstate = ps->weaponstate;
