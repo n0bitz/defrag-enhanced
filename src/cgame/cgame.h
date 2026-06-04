@@ -1,7 +1,9 @@
 #ifndef CGAME_HEADER_GUARD_
 #define CGAME_HEADER_GUARD_
 
+#include "assert.h"
 #include "hook.h"
+#include "log.h"
 #include "cg_local.h"
 
 #define FOR_EACH_CVAR(V)                  \

@@ -84,7 +84,7 @@ static void LinkTargets(void)
 static void LoadModels(fileHandle_t f, lump_t* lump)
 {
     if (lump->filelen < 0 || lump->filelen > sizeof(models)) {
-        Com_Printf("^3WARNING: bad model lump size\n");
+        Com_Printf(LOG_WARN "bad model lump size\n");
         return;
     }
     trap_FS_Seek(f, lump->fileofs, FS_SEEK_SET);
@@ -98,7 +98,7 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
     entity_t* ent;
 
     if (lump->filelen < 0 || lump->filelen > sizeof(entities_lump)) {
-        Com_Printf("^3WARNING: bad entities lump size\n");
+        Com_Printf(LOG_WARN "bad entities lump size\n");
         return;
     }
     trap_FS_Seek(f, lump->fileofs, FS_SEEK_SET);

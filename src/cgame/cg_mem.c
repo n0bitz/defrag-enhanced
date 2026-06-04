@@ -9,7 +9,7 @@ void* CG_Alloc(int size)
     if (allocPoint + size > sizeof(memoryPool)) {
         static qboolean warned;
         if (!warned) {
-            Com_Printf("^3WARNING: cgame pool exhausted\n");
+            Com_Printf(LOG_WARN "cgame pool exhausted\n");
             warned = qtrue;
         }
         return NULL;
