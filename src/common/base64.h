@@ -8,7 +8,7 @@
 
 // Caller must ensure the result can fit in `out`, can use the
 // `BASE64_ENCODED_LEN` macro for this.
-// `out` is not NUL-terminated.
+// `out` will be NUL-terminated.
 void Base64_Encode(const void* in, unsigned int in_len, char* out);
 
 // Caller must ensure the result can fit in `out`, can use the

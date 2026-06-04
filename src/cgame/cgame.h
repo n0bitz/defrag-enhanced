@@ -2,6 +2,7 @@
 #define CGAME_HEADER_GUARD_
 
 #include "assert.h"
+#include "cvar.h"
 #include "hook.h"
 #include "log.h"
 #include "cg_local.h"
@@ -48,8 +49,8 @@ typedef qboolean consoleCommandStatus_t;
 #define CON_CMD_HANDLED qtrue
 
 #define FOR_EACH_CONSOLE_COMMAND(V) \
-    V(savestate, CG_SaveState_f)    \
-    V(restorestate, CG_RestoreState_f)
+    V("savestate", CG_SaveState_f)  \
+    V(RESTORE_STATE_CMD, CG_RestoreState_f)
 
 #define DECLARE_COMMAND(name, func) consoleCommandStatus_t func(void);
 FOR_EACH_CONSOLE_COMMAND(DECLARE_COMMAND)
@@ -85,6 +86,7 @@ qboolean SaveCurrentState(saveState_t* out);
 //
 extern int sv_cheats;
 extern int timer_time;
+
 // Updates some global timer thingy if it changed between snap and prev and
 // returns the timer
 int UpdateTimer(snapshot_t* snap, snapshot_t* prev);

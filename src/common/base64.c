@@ -57,6 +57,8 @@ void Base64_Encode(const void* in, unsigned int in_len, char* out)
     for (; bit & 7; bit -= 2) {
         *out++ = PAD_CHAR;
     }
+
+    *out = '\0';
 }
 
 qboolean Base64_Decode(const char* in, unsigned int in_len, void* out)

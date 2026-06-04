@@ -6,7 +6,7 @@ typedef struct {
 } consoleCommand_t;  // if the og q3 type is ever needed, prefix that with q3 :D
 
 static consoleCommand_t commandTable[] = {
-#define COMMAND_TABLE_ENTRY(name, func) {#name, func},
+#define COMMAND_TABLE_ENTRY(name, func) {name, func},
     FOR_EACH_CONSOLE_COMMAND(COMMAND_TABLE_ENTRY)
 #undef COMMAND_TABLE_ENTRY
 };

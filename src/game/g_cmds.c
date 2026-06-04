@@ -6,12 +6,12 @@ typedef struct {
 } clientCommand_t;
 
 static clientCommand_t commandTable[] = {
-#define COMMAND_TABLE_ENTRY(name, func) {#name, func},
+#define COMMAND_TABLE_ENTRY(name, func) {name, func},
     FOR_EACH_CLIENT_COMMAND(COMMAND_TABLE_ENTRY)
 #undef COMMAND_TABLE_ENTRY
 };
 
-// For conveience and stability, this repeats ClientCommand's prologue and
+// For convenience and stability, this repeats ClientCommand's prologue and
 // then checks for our functions before forwarding it to DF, as this is a less
 // likely thing to ever change. This is unlike console commands in cgame, where
 // we check for our stuff at the end. This is because the alternative would be

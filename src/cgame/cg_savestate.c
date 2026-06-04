@@ -6,27 +6,35 @@ consoleCommandStatus_t CG_SaveState_f(void)
     char restore_command[MAX_STRING_CHARS];
     saveState_t state;
 
-    // TODO: defrag doesn't, but maybe we should validate the chars of
-    // output_cvar_name (eg. no spaces and stuff...)
     trap_Argv(1, cvar_name, sizeof(cvar_name));
     if (cvar_name[0] == '\0') {
         Com_Printf("Usage: /%s <cvar name>\n", CG_Argv(0));
         return CON_CMD_HANDLED;
     }
 
-    if (!SaveCurrentState(&state)) {
-        trap_Print("^1ERROR: Saving current state is not supported\n");
+    if (!Cvar_ValidateName(cvar_name)) {
+        Com_Printf(LOG_ERROR "Invalid cvar name\n");
         return CON_CMD_HANDLED;
     }
 
-    // TODO: LINTER_ASSERT that everything will fit into sizeof(restore_command)
-    // somewhere
-    Q_strncpyz(restore_command, RESTORE_COMMAND " ", sizeof(restore_command));
-    SerializeSaveState(&state,
-                       restore_command + sizeof(RESTORE_COMMAND " ") - 1);
+    if (!SaveCurrentState(&state)) {
+        trap_Print(LOG_ERROR "Saving current state is not supported\n");
+        return CON_CMD_HANDLED;
+    }
+
+#define PREFIX_ RESTORE_STATE_CMD " "
+#define PREFIX_LEN_ sizeof(PREFIX_)
+    static_assert_stmt(
+        PREFIX_LEN_ + SERIALIZED_SAVESTATE_SIZE < sizeof(restore_command),
+        "restore command won't fit");
+    Q_strncpyz(restore_command, PREFIX_, sizeof(restore_command));
+    SerializeSaveState(&state, restore_command + PREFIX_LEN_ - 1);
+#undef PREFIX_LEN_
+#undef PREFIX_
+
     trap_Cvar_Set(cvar_name, restore_command);
 
-    trap_Print("^2Saved\n");
+    trap_Print(LOG_INFO "Saved\n");
     return CON_CMD_HANDLED;
 }
 
@@ -47,7 +55,7 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     // that we don't try to restore stuff client side when cheats are off, lest
     // it break normal gameplay somehow.
     if (!sv_cheats) {
-        trap_Print("^1ERROR: Cheats are not enabled on this server\n");
+        trap_Print(LOG_ERROR "Cheats are not enabled on this server\n");
         return CON_CMD_HANDLED;
     }
 
@@ -58,8 +66,7 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     }
 
     if (!DeserializeSaveState(serialized_state, &state)) {
-        // TODO: Our own print with levels and stuff mb?
-        trap_Print("^1ERROR: Corrupted/invalid savestate\n");
+        trap_Print(LOG_ERROR "Corrupted/invalid savestate\n");
         return CON_CMD_HANDLED;
     }
 
@@ -121,8 +128,7 @@ qboolean SaveCurrentState(saveState_t* out)
     out->weaponstate = ps->weaponstate;
     out->serverTime = cg.snap->serverTime;
     out->timer_time = GetTimerTime(cg.snap);
-    // TODO: upstream a const for 2
-    out->timer_running = !!(ps->stats[STAT_MISC] & 2);
+    out->timer_running = !!(ps->stats[STAT_MISC] & MISC_TIMER_RUNNING);
 
     return qtrue;
 }

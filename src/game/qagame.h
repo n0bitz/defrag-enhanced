@@ -11,7 +11,7 @@
 // g_cmds.c
 //
 // TODO: maybe consider moving this out to a separate header if it gets too big
-#define FOR_EACH_CLIENT_COMMAND(V) V(restorestate, Cmd_RestoreState_f)
+#define FOR_EACH_CLIENT_COMMAND(V) V(RESTORE_STATE_CMD, Cmd_RestoreState_f)
 
 #define DECLARE_COMMAND(name, func) void func(gentity_t* ent);
 FOR_EACH_CLIENT_COMMAND(DECLARE_COMMAND)

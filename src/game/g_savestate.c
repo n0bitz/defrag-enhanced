@@ -45,32 +45,32 @@ void Cmd_RestoreState_f(gentity_t* ent)
     playerState_t* ps = &ent->client->ps;
 
     if (!trap_Cvar_VariableIntegerValue("sv_cheats")) {
-        trap_SendServerCommand(
-            ent - g_entities,
-            "print \"^1ERROR: Cheats are not enabled on this server\n\"");
+        trap_SendServerCommand(ent - g_entities,
+                               "print \"" LOG_ERROR
+                               "Cheats are not enabled on this server\n\"");
         return;
     }
 
     trap_Argv(1, stringifed_state, sizeof(stringifed_state));
 
     if (!DeserializeSaveState(stringifed_state, &state)) {
-        trap_SendServerCommand(ent - g_entities,
-                               "print \"^1ERROR: Corrupted/invalid state\n\"");
+        trap_SendServerCommand(ent - g_entities, "print \"" LOG_ERROR
+                                                 "Corrupted/invalid state\n\"");
         return;
     }
 
     if (ps->pm_type != PM_NORMAL) {
-        trap_SendServerCommand(
-            ent - g_entities,
-            "print \"^1ERROR: Must be in normal gameplay to restore state "
-            "(not spec/noclip/etc.)\n\"");
+        trap_SendServerCommand(ent - g_entities,
+                               "print \"" LOG_ERROR
+                               "Must be in normal gameplay to restore state "
+                               "(not spec/noclip/etc.)\n\"");
         return;
     }
 
     if ((state.pm_flags & PMF_PROMODE) != (ps->pm_flags & PMF_PROMODE)) {
-        trap_SendServerCommand(
-            ent - g_entities,
-            "print \"^1ERROR: Different physics from state\n\"");
+        trap_SendServerCommand(ent - g_entities,
+                               "print \"" LOG_ERROR
+                               "Different physics from state\n\"");
         return;
     }
 
@@ -78,11 +78,13 @@ void Cmd_RestoreState_f(gentity_t* ent)
          ps->persistant[PERS_TEAM] != TEAM_BLUE) ||
         (state.powerups[PW_BLUEFLAG] &&
          ps->persistant[PERS_TEAM] != TEAM_RED)) {
-        trap_SendServerCommand(
-            ent - g_entities, "print \"^1ERROR: Different team from state\n\"");
+        trap_SendServerCommand(ent - g_entities,
+                               "print \"" LOG_ERROR
+                               "Different team from state\n\"");
         return;
     }
 
     RestoreState(ent, &state);
-    trap_SendServerCommand(ent - g_entities, "print \"^3Restored\n\"");
+    trap_SendServerCommand(ent - g_entities,
+                           "print \"" LOG_INFO "Restored\n\"");
 }

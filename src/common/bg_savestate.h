@@ -2,6 +2,11 @@
 #define BG_SAVESTATE_HEADER_GUARD_
 
 #include "q_shared.h"
+#include "base64.h"
+#include "assert.h"
+
+#define SERIALIZED_SAVESTATE_SIZE BASE64_ENCODED_LEN(sizeof(saveState_t))
+#define RESTORE_STATE_CMD "restorestate"
 
 typedef struct {
     // BEGIN ps stuff
@@ -28,14 +33,12 @@ typedef struct {
     qboolean timer_running;
 } saveState_t;
 
+static_assert(SERIALIZED_SAVESTATE_SIZE < MAX_TOKEN_CHARS,
+              "saveState_t too big to serialize");
+
 void SerializeSaveState(const saveState_t* state, char* out);
+
 // Returns false if state is invalid.
 qboolean DeserializeSaveState(const char* str, saveState_t* out);
-
-// TODO: WHAT AM I TRYING TO DO HERE?
-#define RESTORE_COMMAND "restorestate"
-
-// TODO: linter assert sizeof(RESTORE_COMMAND) + sizeof(" ") +
-// sizeof(saveState_t) * b64 cap factor < MAX_TOKEN_CHARS
 
 #endif  // BG_SAVESTATE_HEADER_GUARD_
