@@ -74,10 +74,10 @@ void Cmd_RestoreState_f(gentity_t* ent)
         return;
     }
 
-    if ((state.powerups[PW_REDFLAG] &&
-         ps->persistant[PERS_TEAM] != TEAM_BLUE) ||
-        (state.powerups[PW_BLUEFLAG] &&
-         ps->persistant[PERS_TEAM] != TEAM_RED)) {
+    if (
+       (state.powerups[PW_REDFLAG] && ps->persistant[PERS_TEAM] != TEAM_BLUE) ||
+       (state.powerups[PW_BLUEFLAG] && ps->persistant[PERS_TEAM] != TEAM_RED)
+    ) {
         trap_SendServerCommand(ent - g_entities,
                                "print \"" LOG_ERROR
                                "Different team from state\n\"");

@@ -14,7 +14,7 @@ typedef struct {
 
 static cvarTable_t cvarTable[] = {
 #define CVAR_TABLE_ENTRY(name, default, flags) {&(name), #name, default, flags},
-    FOR_EACH_CVAR(CVAR_TABLE_ENTRY)
+   FOR_EACH_CVAR(CVAR_TABLE_ENTRY)
 #undef CVAR_TABLE_ENTRY
 };
 

@@ -12,8 +12,10 @@ qboolean Cvar_ValidateName(const char* name)
 
     s = name;
     while ((c = *s++) != '\0') {
-        if (c == '\\' || c == '\"' || c == ';' || c == '%' || c <= ' ' ||
-            c >= '~') {
+        if (
+           c == '\\' || c == '\"' || c == ';' || c == '%' || c <= ' ' ||
+           c >= '~'
+        ) {
             return qfalse;
         }
     }

@@ -25,8 +25,8 @@ consoleCommandStatus_t CG_SaveState_f(void)
 #define PREFIX_ RESTORE_STATE_CMD " "
 #define PREFIX_LEN_ sizeof(PREFIX_)
     static_assert_stmt(
-        PREFIX_LEN_ + SERIALIZED_SAVESTATE_SIZE < sizeof(restore_command),
-        "restore command won't fit");
+       PREFIX_LEN_ + SERIALIZED_SAVESTATE_SIZE < sizeof(restore_command),
+       "restore command won't fit");
     Q_strncpyz(restore_command, PREFIX_, sizeof(restore_command));
     SerializeSaveState(&state, restore_command + PREFIX_LEN_ - 1);
 #undef PREFIX_LEN_

@@ -7,7 +7,7 @@ typedef struct {
 
 static consoleCommand_t commandTable[] = {
 #define COMMAND_TABLE_ENTRY(name, func) {name, func},
-    FOR_EACH_CONSOLE_COMMAND(COMMAND_TABLE_ENTRY)
+   FOR_EACH_CONSOLE_COMMAND(COMMAND_TABLE_ENTRY)
 #undef COMMAND_TABLE_ENTRY
 };
 

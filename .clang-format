@@ -15,3 +15,13 @@ InsertNewlineAtEOF: true
 CommentPragmas: "(@copydoc|@copybrief|@see|@overload|@snippet)"
 MacroBlockBegin: "^DEFINE_HOOK$"
 MacroBlockEnd: "^END_HOOK$"
+# clang-format is broken, won't drop to next line unless this is < 4...
+ContinuationIndentWidth: 3
+BreakAfterOpenBracketBracedList: true
+BreakBeforeCloseBracketBracedList: true
+BreakAfterOpenBracketIf: true
+BreakBeforeCloseBracketIf: true
+BreakAfterOpenBracketLoop: true
+BreakBeforeCloseBracketLoop: true
+BreakAfterOpenBracketSwitch: true
+BreakBeforeCloseBracketSwitch: true

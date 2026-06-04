@@ -103,17 +103,17 @@ void CG_DrawEntityConnections(void)
 }
 
 static char* ET_NAMES[] = {
-    "ET_GENERAL",      "ET_PLAYER",
-    "ET_ITEM",         "ET_MISSILE",
-    "ET_MOVER",        "ET_BEAM",
-    "ET_PORTAL",       "ET_SPEAKER",
-    "ET_PUSH_TRIGGER", "ET_TELEPORT_TRIGGER",
-    "ET_INVISIBLE",    "ET_GRAPPLE",
-    "ET_TEAM",
+   "ET_GENERAL",      "ET_PLAYER",
+   "ET_ITEM",         "ET_MISSILE",
+   "ET_MOVER",        "ET_BEAM",
+   "ET_PORTAL",       "ET_SPEAKER",
+   "ET_PUSH_TRIGGER", "ET_TELEPORT_TRIGGER",
+   "ET_INVISIBLE",    "ET_GRAPPLE",
+   "ET_TEAM",
 };
 
 static char* WP_NAMES[] = {
-    "", "", "", "", "grenade", "rocket", "", "", "plasma", "bfg", "hook",
+   "", "", "", "", "grenade", "rocket", "", "", "plasma", "bfg", "hook",
 };
 
 void CG_AddCEntityPOI(centity_t* cent)

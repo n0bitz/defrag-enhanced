@@ -5,7 +5,7 @@
 // statements and declarations, so we need two versions of static_assert...
 #define static_assert(expr, msg)                 \
     int ASSERT_INTERNAL_PREFIX_##static_assert_( \
-        int static_assert[(expr) ? 1 : -1])
+       int static_assert[(expr) ? 1 : -1])
 
 #define static_assert_stmt(expr, msg) \
     do {                              \

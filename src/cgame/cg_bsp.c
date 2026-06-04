@@ -73,7 +73,7 @@ static void LinkTargets(void)
         if (!num_targets) continue;
 
         src->targets =
-            (entity_t**)CG_Alloc((num_targets + 1) * sizeof(src->targets[0]));
+           (entity_t**)CG_Alloc((num_targets + 1) * sizeof(src->targets[0]));
         if (!src->targets) continue;
 
         FindTargets(src, src->targets, num_targets);
@@ -104,8 +104,9 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
     trap_FS_Seek(f, lump->fileofs, FS_SEEK_SET);
     trap_FS_Read(entities_lump, lump->filelen, f);
 
-    for (ent = entities; ent != entities + MAX_GENTITIES;
-         ent++, num_entities++) {
+    for (
+       ent = entities; ent != entities + MAX_GENTITIES; ent++, num_entities++
+    ) {
         char* token = COM_Parse(&p);
         if (!p) break;
 
