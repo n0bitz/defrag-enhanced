@@ -1,9 +1,9 @@
 #include "cgame.h"
 #include "hook.h"
 
-#define DEFINE_CVAR(name, default, flags) vmCvar_t name;
-FOR_EACH_CVAR(DEFINE_CVAR)
-#undef DEFINE_CVAR
+#define DEFINE_CVAR_(name, default, flags) vmCvar_t name;
+FOR_EACH_CVAR(DEFINE_CVAR_)
+#undef DEFINE_CVAR_
 
 typedef struct {
     vmCvar_t* vmCvar;
@@ -13,9 +13,10 @@ typedef struct {
 } cvarTable_t;
 
 static cvarTable_t cvarTable[] = {
-#define CVAR_TABLE_ENTRY(name, default, flags) {&(name), #name, default, flags},
-   FOR_EACH_CVAR(CVAR_TABLE_ENTRY)
-#undef CVAR_TABLE_ENTRY
+#define CVAR_TABLE_ENTRY_(name, default, flags) \
+    {&(name), #name, default, flags},
+   FOR_EACH_CVAR(CVAR_TABLE_ENTRY_)
+#undef CVAR_TABLE_ENTRY_
 };
 
 static int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);

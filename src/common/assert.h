@@ -1,5 +1,5 @@
-#ifndef ASSERT_HEADER_GUARD_
-#define ASSERT_HEADER_GUARD_
+#ifndef ASSERT_HEADER_GUARD__
+#define ASSERT_HEADER_GUARD__
 
 // Unfortunately, ANSI C doesn't have a static_assert, nor will it let us mix
 // statements and declarations, so we need two versions of static_assert...
@@ -25,4 +25,4 @@
 // clang-format on
 #endif  // LINTER
 
-#endif  // ASSERT_HEADER_GUARD_
+#endif  // ASSERT_HEADER_GUARD__

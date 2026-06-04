@@ -6,9 +6,9 @@ typedef struct {
 } clientCommand_t;
 
 static clientCommand_t commandTable[] = {
-#define COMMAND_TABLE_ENTRY(name, func) {name, func},
-   FOR_EACH_CLIENT_COMMAND(COMMAND_TABLE_ENTRY)
-#undef COMMAND_TABLE_ENTRY
+#define COMMAND_TABLE_ENTRY_(name, func) {name, func},
+   FOR_EACH_CLIENT_COMMAND(COMMAND_TABLE_ENTRY_)
+#undef COMMAND_TABLE_ENTRY_
 };
 
 // For convenience and stability, this repeats ClientCommand's prologue and

@@ -1,5 +1,5 @@
-#ifndef HOOK_HEADER_GUARD_
-#define HOOK_HEADER_GUARD_
+#ifndef HOOK_HEADER_GUARD__
+#define HOOK_HEADER_GUARD__
 
 // The builder will override these suffixes, the ifndefs are just for editors
 #ifndef HOOK_SUFFIX
@@ -10,11 +10,11 @@
 #define ORIG_SUFFIX _OR16_
 #endif  // ORIG_SUFFIX
 
-#define HOOK_LOCAL_CONCAT_(a, b) a##b
-#define HOOK_LOCAL_EVAL_THEN_CONCAT_(a, b) HOOK_LOCAL_CONCAT_(a, b)
+#define HOOK_LOCAL_CONCAT__(a, b) a##b
+#define HOOK_LOCAL_EVAL_THEN_CONCAT__(a, b) HOOK_LOCAL_CONCAT__(a, b)
 
-#define HOOKED(name) HOOK_LOCAL_EVAL_THEN_CONCAT_(name, HOOK_SUFFIX)
-#define ORIGINAL(name) HOOK_LOCAL_EVAL_THEN_CONCAT_(name, ORIG_SUFFIX)
+#define HOOKED(name) HOOK_LOCAL_EVAL_THEN_CONCAT__(name, HOOK_SUFFIX)
+#define ORIGINAL(name) HOOK_LOCAL_EVAL_THEN_CONCAT__(name, ORIG_SUFFIX)
 
 // NOTE:
 // 1. The `extern` is to prevent anyone from mistakenly adding a static
@@ -51,4 +51,4 @@
 
 #define END_HOOK }
 
-#endif  // HOOK_HEADER_GUARD_
+#endif  // HOOK_HEADER_GUARD__

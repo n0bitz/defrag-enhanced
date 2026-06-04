@@ -1,5 +1,5 @@
-#ifndef BASE64_HEADER_GUARD_
-#define BASE64_HEADER_GUARD_
+#ifndef BASE64_HEADER_GUARD__
+#define BASE64_HEADER_GUARD__
 
 #include "q_shared.h"
 
@@ -16,4 +16,4 @@ void Base64_Encode(const void* in, unsigned int in_len, char* out);
 // Returns false on failure.
 qboolean Base64_Decode(const char* in, unsigned int in_len, void* out);
 
-#endif  // BASE64_HEADER_GUARD_
+#endif  // BASE64_HEADER_GUARD__

@@ -1,5 +1,5 @@
-#ifndef BG_SAVESTATE_HEADER_GUARD_
-#define BG_SAVESTATE_HEADER_GUARD_
+#ifndef BG_SAVESTATE_HEADER_GUARD__
+#define BG_SAVESTATE_HEADER_GUARD__
 
 #include "q_shared.h"
 #include "base64.h"
@@ -41,4 +41,4 @@ void SerializeSaveState(const saveState_t* state, char* out);
 // Returns false if state is invalid.
 qboolean DeserializeSaveState(const char* str, saveState_t* out);
 
-#endif  // BG_SAVESTATE_HEADER_GUARD_
+#endif  // BG_SAVESTATE_HEADER_GUARD__

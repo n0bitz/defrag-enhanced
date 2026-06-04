@@ -1,5 +1,5 @@
-#ifndef CGAME_HEADER_GUARD_
-#define CGAME_HEADER_GUARD_
+#ifndef CGAME_HEADER_GUARD__
+#define CGAME_HEADER_GUARD__
 
 #include "assert.h"
 #include "cvar.h"
@@ -13,9 +13,9 @@
     V(cg_entitiesDraw, "0", CVAR_ARCHIVE) \
     V(cg_entitiesMaxDistance, "1000", CVAR_ARCHIVE)
 
-#define DECLARE_CVAR(name, default, flags) extern vmCvar_t name;
-FOR_EACH_CVAR(DECLARE_CVAR)
-#undef DECLARE_CVAR
+#define DECLARE_CVAR_(name, default, flags) extern vmCvar_t name;
+FOR_EACH_CVAR(DECLARE_CVAR_)
+#undef DECLARE_CVAR_
 
 //
 // cg_bsp.c
@@ -52,9 +52,9 @@ typedef qboolean consoleCommandStatus_t;
     V("savestate", CG_SaveState_f)  \
     V(RESTORE_STATE_CMD, CG_RestoreState_f)
 
-#define DECLARE_COMMAND(name, func) consoleCommandStatus_t func(void);
-FOR_EACH_CONSOLE_COMMAND(DECLARE_COMMAND)
-#undef DECLARE_COMMAND
+#define DECLARE_COMMAND_(name, func) consoleCommandStatus_t func(void);
+FOR_EACH_CONSOLE_COMMAND(DECLARE_COMMAND_)
+#undef DECLARE_COMMAND_
 
 //
 // cg_entity_viewer.c
@@ -91,4 +91,4 @@ extern int timer_time;
 // returns the timer
 int UpdateTimer(snapshot_t* snap, snapshot_t* prev);
 
-#endif  // CGAME_HEADER_GUARD_
+#endif  // CGAME_HEADER_GUARD__

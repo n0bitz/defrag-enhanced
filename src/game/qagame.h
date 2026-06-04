@@ -1,5 +1,5 @@
-#ifndef QAGAME_HEADER_GUARD_
-#define QAGAME_HEADER_GUARD_
+#ifndef QAGAME_HEADER_GUARD__
+#define QAGAME_HEADER_GUARD__
 
 #include "assert.h"
 #include "hook.h"
@@ -13,9 +13,9 @@
 // TODO: maybe consider moving this out to a separate header if it gets too big
 #define FOR_EACH_CLIENT_COMMAND(V) V(RESTORE_STATE_CMD, Cmd_RestoreState_f)
 
-#define DECLARE_COMMAND(name, func) void func(gentity_t* ent);
-FOR_EACH_CLIENT_COMMAND(DECLARE_COMMAND)
-#undef DECLARE_COMMAND
+#define DECLARE_COMMAND_(name, func) void func(gentity_t* ent);
+FOR_EACH_CLIENT_COMMAND(DECLARE_COMMAND_)
+#undef DECLARE_COMMAND_
 
 //
 // og df stuff that you don't know/care where to place
@@ -23,4 +23,4 @@ FOR_EACH_CLIENT_COMMAND(DECLARE_COMMAND)
 void DF_PlacePlayerTeleport(gentity_t* ent, vec3_t origin, vec3_t angles,
                             vec3_t velocity);
 
-#endif  // QAGAME_HEADER_GUARD_
+#endif  // QAGAME_HEADER_GUARD__
