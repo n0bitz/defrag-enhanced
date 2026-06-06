@@ -33,6 +33,13 @@ def main():
             source_files=list(glob("src/game/*.c")) + COMMON_SOURCES,
             include_paths=["src/game", "src/common", "src/sdk/game"],
         ),
+        Project(
+            name="ui",
+            init_point="UI_Init",
+            symbols_path="src/ui/symbols.toml",
+            source_files=list(glob("src/ui/*.c")),
+            include_paths=["src/ui", "src/common", "src/sdk/q3_ui", "src/sdk/game"],
+        ),
     ]
 
     STEPS = [
