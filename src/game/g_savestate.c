@@ -1,5 +1,6 @@
 #include "qagame.h"
 
+void DF_ResetClientWaits(int clientNum);
 static void RestoreState(gentity_t* ent, saveState_t* state)
 {
     int i;
@@ -34,7 +35,10 @@ static void RestoreState(gentity_t* ent, saveState_t* state)
     ps->weaponstate = state->weaponstate;
     timers[ent - g_entities].time = state->timer_time;
     timers[ent - g_entities].timer_running = state->timer_running;
+    timers[ent - g_entities].num_checkpoints = state->num_checkpoints_hit;
+    timers[ent - g_entities].checkpoint_bitmap = 0;
 
+    DF_ResetClientWaits(ent - g_entities);
     DF_PlacePlayerTeleport(ent, origin, viewangles, velocity);
 }
 

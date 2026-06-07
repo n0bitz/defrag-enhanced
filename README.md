@@ -15,7 +15,7 @@ uv run pre-commit install
 To build: `uv run build.py`
 
 
-## Style
+### Style
 
 TODO: Put this somewhere else or get clang-* to enforce them automatically
 

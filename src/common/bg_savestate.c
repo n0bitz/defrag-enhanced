@@ -23,5 +23,6 @@ qboolean DeserializeSaveState(const char* str, saveState_t* out)
     return (out->holdable >= HI_NONE && out->holdable < HI_NUM_HOLDABLE) &&
            (out->weapon >= WP_NONE && out->weapon < WP_NUM_WEAPONS) &&
            (out->weaponstate >= WEAPON_READY &&
-            out->weaponstate <= WEAPON_FIRING);
+            out->weaponstate <= WEAPON_FIRING) &&
+           (out->num_checkpoints_hit >= 0 && out->num_checkpoints_hit < 0x20);
 }

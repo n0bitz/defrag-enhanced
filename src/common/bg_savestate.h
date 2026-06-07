@@ -31,6 +31,7 @@ typedef struct {
     int serverTime;
     int timer_time;
     qboolean timer_running;
+    int num_checkpoints_hit;
 } saveState_t;
 
 static_assert(SERIALIZED_SAVESTATE_SIZE < MAX_TOKEN_CHARS,

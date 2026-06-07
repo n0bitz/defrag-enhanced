@@ -1,5 +1,5 @@
 #include "cgame.h"
-
+extern int num_checkpoints_hit;
 consoleCommandStatus_t CG_SaveState_f(void)
 {
     char cvar_name[MAX_TOKEN_CHARS];
@@ -33,15 +33,14 @@ consoleCommandStatus_t CG_SaveState_f(void)
 #undef PREFIX_
 
     trap_Cvar_Set(cvar_name, restore_command);
-
     trap_Print(LOG_INFO "Saved\n");
     return CON_CMD_HANDLED;
 }
 
 // Command interceptor to restore some stuff client-side before forwarding the
 // command along to the server. Ideally the server would handle everything, and
-// nothing needs to be done here, but some stuff stuff is just inherently
-// client-side like the checkpoint history...
+// nothing needs to be done here, but some stuff is just inherently client-side
+// like the checkpoint history...
 consoleCommandStatus_t CG_RestoreState_f(void)
 {
     char serialized_state[MAX_TOKEN_CHARS];
@@ -82,9 +81,19 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     // before draw active where cg.weaponSelect is ucmd set, but just in case.
     trap_SetUserCmdValue(cg.weaponSelect, cg.zoomSensitivity);
 
+    num_checkpoints_hit = state.num_checkpoints_hit;
+
     // let it go through so the server can do the actual restoring
     return CON_CMD_NOT_HANDLED;
 }
+
+static int asdf = 0;
+
+DEFINE_HOOK(int, UpdateTimer, (snapshot_t* snap, snapshot_t* prev))
+    int ret = ORIGINAL(UpdateTimer)(snap, prev);
+    if (asdf) sv_cheats = 0;
+    return ret;
+END_HOOK
 
 // This function is kinda fragile in that if defrag ever changes the
 // implementation of the underlying UpdateTimer to add/remove side-effects, we
@@ -94,7 +103,7 @@ consoleCommandStatus_t CG_RestoreState_f(void)
 static int GetTimerTime(snapshot_t* snap)
 {
     int tmp = timer_time;
-    int time = UpdateTimer(snap, NULL);
+    int time = ORIGINAL(UpdateTimer)(snap, NULL);
 
     timer_time = tmp;
     return time;
@@ -128,6 +137,24 @@ qboolean SaveCurrentState(saveState_t* out)
     out->serverTime = cg.snap->serverTime;
     out->timer_time = GetTimerTime(cg.snap);
     out->timer_running = !!(ps->stats[STAT_MISC] & MISC_TIMER_RUNNING);
+    out->num_checkpoints_hit = num_checkpoints_hit;
 
     return qtrue;
 }
+
+DEFINE_HOOK(int, some_checkpoint_stuff, (snapshot_t* curr, snapshot_t* prev))
+    int ret;
+    qboolean demoPlayback;
+
+    if (!sv_cheats) {
+        return ORIGINAL(some_checkpoint_stuff)(curr, prev);
+    }
+
+    demoPlayback = cg.demoPlayback;
+    asdf = 1;
+    cg.demoPlayback = qtrue;
+    ret = ORIGINAL(some_checkpoint_stuff)(curr, prev);
+    cg.demoPlayback = demoPlayback;
+    sv_cheats = 1;
+    return ret;
+END_HOOK
