@@ -107,11 +107,11 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
     for (
        ent = entities; ent != entities + MAX_GENTITIES; ent++, num_entities++
     ) {
-        char* token = COM_Parse(&p);
+        COM_Parse(&p);
         if (!p) break;
 
         for (;;) {
-            token = COM_Parse(&p);
+            char* token = COM_Parse(&p);
             if (token[0] == '}') break;
             if (!Q_stricmp(token, "classname")) {
                 token = COM_Parse(&p);

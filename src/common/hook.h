@@ -45,7 +45,7 @@
 #define DEFINE_HOOK(ret_type, name, param_list)           \
     DECLARE_ORIGINAL_AND_HOOK(ret_type, name, param_list) \
     {                                                     \
-        ret_type(*ORIGINAL(name)) param_list;
+        ret_type(*ORIGINAL(name)) param_list = 0;
 #endif  // LINTER
 // NOLINTEND(bugprone-macro-parentheses)
 
