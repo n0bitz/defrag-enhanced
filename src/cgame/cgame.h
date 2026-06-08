@@ -57,6 +57,12 @@ FOR_EACH_CONSOLE_COMMAND(DECLARE_COMMAND_)
 #undef DECLARE_COMMAND_
 
 //
+// cg_draw.c
+//
+void CG_DrawBoundingBox(const vec3_t origin, const vec3_t mins,
+                        const vec3_t maxs, const byte color[4]);
+
+//
 // cg_entity_viewer.c
 //
 void CG_AddEntityPOIs(void);
@@ -84,8 +90,13 @@ qboolean SaveCurrentState(saveState_t* out);
 //
 // og df stuff that you don't know/care where to place
 //
+extern vmCvar_t cg_drawBBox;
+extern vmCvar_t df_cl_alwaysDrawItems;
+extern int is_multiplayer;
 extern int sv_cheats;
 extern int timer_time;
+
+qboolean IsItemEntityAvailableToClient(entityState_t* state, int clientNum);
 
 // Updates some global timer thingy if it changed between snap and prev and
 // returns the timer

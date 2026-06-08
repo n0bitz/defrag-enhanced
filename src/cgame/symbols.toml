@@ -1,6 +1,7 @@
 [code]
 Com_Printf = 0x28f
 CG_Argv = 0x2ac
+IsItemEntityAvailableToClient = 0x4e14
 UpdateTimer = 0x5fd7
 CG_DrawStrlen = 0x1d514
 strlen = 0x2f24d
@@ -129,10 +130,15 @@ CG_DrawActive = 0x1ce20
 CG_AddCEntity = 0x1f222
 CG_ConsoleCommand = 0x1ad89
 CG_InitConsoleCommands = 0x1adc7
+CG_Item = 0x1ea0c
 
 [data]
 bg_itemlist = 0x3748
+cg_drawBBox = 0x11868
+cg_simpleItems = 0x14728
 cg = 0xcfcc8
 cgs = 0xee75c
+df_cl_alwaysDrawItems = 0x11b214
+is_multiplayer = 0x11d2ac
 sv_cheats = 0x11d40c
 timer_time = 0x11d77c
