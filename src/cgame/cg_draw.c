@@ -30,7 +30,7 @@ void CG_DrawBoundingBox(const vec3_t origin, const vec3_t mins,
                         const vec3_t maxs, const byte color[4])
 {
     int i;
-    float extx, exty, extz;
+    vec3_t size;
     polyVert_t verts[4];
     vec3_t corners[8];
     static qhandle_t bbox_shader = 0;
@@ -41,10 +41,7 @@ void CG_DrawBoundingBox(const vec3_t origin, const vec3_t mins,
         bbox_shader_nocull = trap_R_RegisterShader("bbox_nocull");
     }
 
-    // get the extents (size)
-    extx = maxs[0] - mins[0];
-    exty = maxs[1] - mins[1];
-    extz = maxs[2] - mins[2];
+    VectorSubtract(maxs, mins, size);
 
     // set the polygon's texture coordinates
     verts[0].st[0] = 0;
@@ -67,17 +64,17 @@ void CG_DrawBoundingBox(const vec3_t origin, const vec3_t mins,
     VectorAdd(origin, maxs, corners[3]);
 
     VectorCopy(corners[3], corners[2]);
-    corners[2][0] -= extx;
+    corners[2][0] -= size[0];
 
     VectorCopy(corners[2], corners[1]);
-    corners[1][1] -= exty;
+    corners[1][1] -= size[1];
 
     VectorCopy(corners[1], corners[0]);
-    corners[0][0] += extx;
+    corners[0][0] += size[0];
 
     for (i = 0; i < 4; i++) {
         VectorCopy(corners[i], corners[i + 4]);
-        corners[i + 4][2] -= extz;
+        corners[i + 4][2] -= size[2];
     }
 
     // top
