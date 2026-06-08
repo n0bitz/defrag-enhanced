@@ -9,6 +9,126 @@ static struct nk_context ctx;
 static byte memory[1024 * 1024];
 static struct nk_user_font font;
 
+static fontInfo_t idc;
+vec4_t colorBlack = {0, 0, 0, 1};
+
+size_t strlen(const char* string)
+{
+    const char* s;
+
+    s = string;
+    while (*s) {
+        s++;
+    }
+    return s - string;
+}
+
+static int Text_Height(const char* text, float scale, int limit)
+{
+    int len, count;
+    float max;
+    glyphInfo_t* glyph;
+    float useScale;
+    const char* s = text;  // bk001206 - unsigned
+    fontInfo_t* font = &idc;
+
+    useScale = scale * font->glyphScale;
+    max = 0;
+    if (text) {
+        len = strlen(text);
+        if (limit > 0 && len > limit) {
+            len = limit;
+        }
+        count = 0;
+        while (s && *s && count < len) {
+            if (Q_IsColorString(s)) {
+                s += 2;
+                continue;
+            } else {
+                glyph = &font->glyphs[(
+                   int)*s];  // TTimo: FIXME: getting nasty warnings without the
+                             // cast, hopefully this doesn't break the VM build
+                if (max < glyph->height) {
+                    max = glyph->height;
+                }
+                s++;
+                count++;
+            }
+        }
+    }
+    return max * useScale;
+}
+
+static void Text_PaintChar(float x, float y, float width, float height,
+                           float scale, float s, float t, float s2, float t2,
+                           qhandle_t hShader)
+{
+    float w, h;
+    w = width * scale;
+    h = height * scale;
+    UI_AdjustFrom640(&x, &y, &w, &h);
+    trap_R_DrawStretchPic(x, y, w, h, s, t, s2, t2, hShader);
+}
+
+static void Text_Paint(float x, float y, float scale, vec4_t color,
+                       const char* text, float adjust, int limit, int style)
+{
+    int len, count;
+    vec4_t newColor;
+    glyphInfo_t* glyph;
+    float useScale;
+    fontInfo_t* font = &idc;
+    useScale = scale * font->glyphScale;
+    if (text) {
+        const char* s = text;  // bk001206 - unsigned
+        trap_R_SetColor(color);
+        memcpy(&newColor[0], &color[0], sizeof(vec4_t));
+        len = strlen(text);
+        if (limit > 0 && len > limit) {
+            len = limit;
+        }
+        count = 0;
+        while (s && *s && count < len) {
+            glyph = &font->glyphs[(
+               int)*s];  // TTimo: FIXME: getting nasty warnings without the
+                         // cast, hopefully this doesn't break the VM build
+                         // int yadj = Assets.textFont.glyphs[text[i]].bottom +
+            // Assets.textFont.glyphs[text[i]].top; float yadj = scale *
+            // (Assets.textFont.glyphs[text[i]].imageHeight -
+            // Assets.textFont.glyphs[text[i]].height);
+            if (0) {
+                // memcpy(newColor, g_color_table[ColorIndex(*(s + 1))],
+                //        sizeof(newColor));
+                // newColor[3] = color[3];
+                // trap_R_SetColor(newColor);
+                // s += 2;
+                // continue;
+            } else {
+                float yadj = useScale * glyph->top;
+                if (style == 0) {
+                    int ofs = style == 0 ? 1 : 2;
+                    colorBlack[3] = newColor[3];
+                    trap_R_SetColor(colorBlack);
+                    Text_PaintChar(x + ofs, y - yadj + ofs, glyph->imageWidth,
+                                   glyph->imageHeight, useScale, glyph->s,
+                                   glyph->t, glyph->s2, glyph->t2,
+                                   glyph->glyph);
+                    trap_R_SetColor(newColor);
+                    colorBlack[3] = 1.0;
+                }
+                Text_PaintChar(x, y - yadj, glyph->imageWidth,
+                               glyph->imageHeight, useScale, glyph->s, glyph->t,
+                               glyph->s2, glyph->t2, glyph->glyph);
+
+                x += (glyph->xSkip * useScale) + adjust;
+                s++;
+                count++;
+            }
+        }
+        trap_R_SetColor(NULL);
+    }
+}
+
 static float text_width(nk_handle handle, float height, const char* text,
                         int len)
 {
@@ -22,6 +142,7 @@ DEFINE_HOOK(void, UI_Init, (void))
     font.height = 16;
     font.width = text_width;
     nk_init_fixed(&ctx, memory, sizeof(memory), &font);
+    trap_R_RegisterFont("AdwaitaSans-Regular.ttf", 16, &idc);
 END_HOOK
 
 // DEFINE_HOOK(void, UI_KeyEvent, (int key, int down))
@@ -85,8 +206,10 @@ DEFINE_HOOK(void, UI_Refresh, (int realtime))
                     const struct nk_command_text* t =
                        (const struct nk_command_text*)cmd;
                     struct nk_colorf color = nk_color_cf(t->foreground);
-                    UI_DrawString(t->x, t->y, t->string, UI_SMALLFONT,
-                                  (float*)&color);
+                    // UI_DrawString(t->x, t->y, t->string, UI_SMALLFONT,
+                    //   (float*)&color);
+                    Text_Paint(t->x, t->y, 0.2, (float*)&color, t->string, 0.0f,
+                               0, 0);
                     break;
                 }
                 default:

@@ -4,4 +4,6 @@
 #include "hook.h"
 #include "ui_local.h"
 
+void trap_R_RegisterFont(const char* fontName, int pointSize, fontInfo_t* font);
+
 #endif  // UI_HEADER_GUARD__
