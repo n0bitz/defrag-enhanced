@@ -1,4 +1,5 @@
 [code]
+Com_Printf = 0xc21b
 UI_AdjustFrom640 = 0xcded
 UI_DrawString = 0xc973
 UI_FillRect = 0xcebe

@@ -11,6 +11,30 @@ static struct nk_user_font font;
 
 static fontInfo_t idc;
 vec4_t colorBlack = {0, 0, 0, 1};
+static qhandle_t plzwork;
+
+static void UIx_FillRect(float x, float y, float width, float height,
+                         const float* color)
+{
+    trap_R_SetColor(color);
+
+    trap_R_DrawStretchPic(x, y, width, height, 0, 0, 0, 0, plzwork);
+
+    trap_R_SetColor(NULL);
+}
+
+static void UIx_DrawRect(float x, float y, float width, float height,
+                         const float* color)
+{
+    trap_R_SetColor(color);
+
+    trap_R_DrawStretchPic(x, y, width, 1, 0, 0, 0, 0, plzwork);
+    trap_R_DrawStretchPic(x, y, 1, height, 0, 0, 0, 0, plzwork);
+    trap_R_DrawStretchPic(x, y + height - 1, width, 1, 0, 0, 0, 0, plzwork);
+    trap_R_DrawStretchPic(x + width - 1, y, 1, height, 0, 0, 0, 0, plzwork);
+
+    trap_R_SetColor(NULL);
+}
 
 size_t strlen(const char* string)
 {
@@ -21,6 +45,37 @@ size_t strlen(const char* string)
         s++;
     }
     return s - string;
+}
+
+static int Text_Width(const char* text, float scale, int limit)
+{
+    int count, len;
+    float out;
+    glyphInfo_t* glyph;
+    float useScale;
+    const char* s = text;
+    fontInfo_t* font = &idc;
+    useScale = scale * font->glyphScale;
+    out = 0;
+    if (text) {
+        len = strlen(text);
+        if (limit > 0 && len > limit) {
+            len = limit;
+        }
+        count = 0;
+        while (s && *s && count < len) {
+            if (0) {
+                s += 2;
+                continue;
+            } else {
+                glyph = &font->glyphs[(int)*s];
+                out += glyph->xSkip;
+                s++;
+                count++;
+            }
+        }
+    }
+    return out * useScale;
 }
 
 static int Text_Height(const char* text, float scale, int limit)
@@ -66,7 +121,7 @@ static void Text_PaintChar(float x, float y, float width, float height,
     float w, h;
     w = width * scale;
     h = height * scale;
-    UI_AdjustFrom640(&x, &y, &w, &h);
+    // UI_AdjustFrom640(&x, &y, &w, &h);
     trap_R_DrawStretchPic(x, y, w, h, s, t, s2, t2, hShader);
 }
 
@@ -105,17 +160,18 @@ static void Text_Paint(float x, float y, float scale, vec4_t color,
                 // continue;
             } else {
                 float yadj = useScale * glyph->top;
-                if (style == 0) {
-                    int ofs = style == 0 ? 1 : 2;
-                    colorBlack[3] = newColor[3];
-                    trap_R_SetColor(colorBlack);
-                    Text_PaintChar(x + ofs, y - yadj + ofs, glyph->imageWidth,
-                                   glyph->imageHeight, useScale, glyph->s,
-                                   glyph->t, glyph->s2, glyph->t2,
-                                   glyph->glyph);
-                    trap_R_SetColor(newColor);
-                    colorBlack[3] = 1.0;
-                }
+                // if (style == 0) {
+                //     int ofs = style == 0 ? 1 : 2;
+                //     colorBlack[3] = newColor[3];
+                //     trap_R_SetColor(colorBlack);
+                //     Text_PaintChar(x + ofs, y - yadj + ofs,
+                //     glyph->imageWidth,
+                //                    glyph->imageHeight, useScale, glyph->s,
+                //                    glyph->t, glyph->s2, glyph->t2,
+                //                    glyph->glyph);
+                //     trap_R_SetColor(newColor);
+                //     colorBlack[3] = 1.0;
+                // }
                 Text_PaintChar(x, y - yadj, glyph->imageWidth,
                                glyph->imageHeight, useScale, glyph->s, glyph->t,
                                glyph->s2, glyph->t2, glyph->glyph);
@@ -132,7 +188,8 @@ static void Text_Paint(float x, float y, float scale, vec4_t color,
 static float text_width(nk_handle handle, float height, const char* text,
                         int len)
 {
-    return len * 8;
+    return Text_Width(text, 12.f / 48.f, len);
+    // return len * 8;
 }
 
 DEFINE_HOOK(void, UI_Init, (void))
@@ -143,6 +200,8 @@ DEFINE_HOOK(void, UI_Init, (void))
     font.width = text_width;
     nk_init_fixed(&ctx, memory, sizeof(memory), &font);
     trap_R_RegisterFont("AdwaitaSans-Regular.ttf", 16, &idc);
+    plzwork = trap_R_RegisterShaderNoMip("white");
+    Com_Printf("???????????????? %d\n", Text_Height("A", 12.f / 48.f, 0));
 END_HOOK
 
 // DEFINE_HOOK(void, UI_KeyEvent, (int key, int down))
@@ -192,14 +251,14 @@ DEFINE_HOOK(void, UI_Refresh, (int realtime))
                     const struct nk_command_rect* r =
                        (const struct nk_command_rect*)cmd;
                     struct nk_colorf color = nk_color_cf(r->color);
-                    UI_DrawRect(r->x, r->y, r->w, r->h, (float*)&color);
+                    UIx_DrawRect(r->x, r->y, r->w, r->h, (float*)&color);
                     break;
                 }
                 case NK_COMMAND_RECT_FILLED: {
                     const struct nk_command_rect_filled* r =
                        (const struct nk_command_rect_filled*)cmd;
                     struct nk_colorf color = nk_color_cf(r->color);
-                    UI_FillRect(r->x, r->y, r->w, r->h, (float*)&color);
+                    UIx_FillRect(r->x, r->y, r->w, r->h, (float*)&color);
                     break;
                 }
                 case NK_COMMAND_TEXT: {
@@ -208,8 +267,8 @@ DEFINE_HOOK(void, UI_Refresh, (int realtime))
                     struct nk_colorf color = nk_color_cf(t->foreground);
                     // UI_DrawString(t->x, t->y, t->string, UI_SMALLFONT,
                     //   (float*)&color);
-                    Text_Paint(t->x, t->y, 0.2, (float*)&color, t->string, 0.0f,
-                               0, 0);
+                    Text_Paint(t->x, t->y + t->height, 12.f / 48.f,
+                               (float*)&color, t->string, 0.0f, 0, 0);
                     break;
                 }
                 default:
