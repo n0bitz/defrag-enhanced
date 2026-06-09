@@ -107,8 +107,8 @@ ceil = -109
 [hooks]
 UI_Init = 0xcdae
 # UI_Shutdown = 0xcdab
-# UI_KeyEvent = 0xcb26
-# UI_MouseEvent = 0xcb6c
+UI_KeyEvent = 0xcb26
+UI_MouseEvent = 0xcb6c
 UI_Refresh = 0xcfb4
 # UI_IsFullscreen = 0xcaa6
 # UI_SetActiveMenu = 0xcadd
