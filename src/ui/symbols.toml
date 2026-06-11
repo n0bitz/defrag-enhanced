@@ -4,6 +4,8 @@ UI_AdjustFrom640 = 0xcded
 UI_DrawString = 0xc973
 UI_FillRect = 0xcebe
 UI_DrawRect = 0xcef8
+qsort = 0x1bc8e
+fabs = 0x1c4c1
 # ----------------------------- SYSCALLS -----------------------------
 trap_Error = -1
 trap_Print = -2

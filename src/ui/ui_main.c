@@ -1,216 +1,169 @@
-#include <keycodes.h>
 #include <q_shared.h>
 #include <ui_local.h>
 #include "ui.h"
 
+static void WriteTGA(char* filename, const byte* data, int width, int height);
+
+//
+// stb_malloc
+//
+#define size_t unsigned
+#define STB_MALLOC_IMPLEMENTATION
+#define STBM_ASSERT(expr) \
+    (void)(!(expr) ? (Com_Printf("^1%s %d\n", __FILE__, __LINE__), 0) : 0)
+#include "stb_malloc.h"
+
+static stbm_heap* heap;
+static byte heap_storage[4 * 1024 * 1024];
+static size_t heap_offset;
+static size_t heap_last_offset;
+
+static void* heap_system_alloc(void* user_context, size_t size_requested,
+                               size_t* size_provided)
+{
+    void* ptr;
+
+    (void)user_context;
+
+    if (heap_offset + size_requested > sizeof(heap_storage)) {
+        trap_Error("out of memory");
+        return NULL;
+    }
+
+    ptr = heap_storage + heap_offset;
+    heap_last_offset = heap_offset;
+    heap_offset += size_requested;
+    *size_provided = size_requested;
+    return ptr;
+}
+
+static void heap_system_free(void* user_context, void* ptr)
+{
+    (void)user_context;
+    (void)ptr;
+    if (ptr == heap_storage + heap_last_offset) {
+        Com_Printf("heap_system_free succeeded, freed %d bytes\n",
+                   heap_offset - heap_last_offset);
+        heap_offset = heap_last_offset;
+    } else {
+        Com_Printf("heap_system_free failed\n");
+    }
+}
+
+static void heap_init(void)
+{
+    static byte storage[0x1000 /*STBM_HEAP_SIZEOF*/];
+
+    stbm_heap_config config;
+    memset(&config, 0, sizeof(config));
+    config.system_alloc = heap_system_alloc;
+    config.system_free = heap_system_free;
+
+    heap = stbm_heap_init(storage, sizeof(storage), &config);
+    stbm_heapconfig_gather_full_stats(heap);
+}
+
+//
+// nuklear
+//
+double fmod(double x, double y) { return x - ((int)(x / y) * y); }
+double acos(double x) { return atan2(sqrt(1 - (x * x)), x); }
+
 #define NK_IMPLEMENTATION
-#define NK_ASSERT(expr)
+#define NK_ASSERT(expr) \
+    (void)(!(expr) ? (Com_Printf("^1%s %d\n", __FILE__, __LINE__), 0) : 0)
+
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define STBRP_ASSERT(expr) NK_ASSERT(expr)
+#define STBRP_SORT qsort
+#define STBTT_assert(expr) NK_ASSERT(expr)
+#define STBTT_ifloor nk_ifloorf
+#define STBTT_iceil nk_iceilf
+#define STBTT_sqrt sqrt
+#define STBTT_fmod fmod
+#define STBTT_cos nk_cos
+#define STBTT_fabs fabs
+#define STBTT_pow nk_pow
+#define STBTT_acos acos
+#define STBTT_memcpy memcpy
+#define STBTT_memset memset
+#define STBTT_strlen nk_strlen
 #include "nuklear.h"
 
+static void* nuklear_alloc(nk_handle userdata, void* old, nk_size size)
+{
+    (void)userdata;
+    (void)old;
+    return stbm_alloc(NULL, heap, size, 0);
+}
+
+static void nuklear_free(nk_handle userdata, void* old)
+{
+    (void)userdata;
+    stbm_free(NULL, heap, old);
+}
+
+static struct nk_allocator nuklear_allocator = {
+   0,
+   nuklear_alloc,
+   nuklear_free,
+};
+
 static struct nk_context ctx;
-static byte memory[1024 * 1024];
-static struct nk_user_font font;
 
-static fontInfo_t idc;
-vec4_t colorBlack = {0, 0, 0, 1};
-static qhandle_t plzwork;
+static struct nk_buffer cmds;
+static struct nk_buffer vbuf;
+static struct nk_buffer ebuf;
 
-static void UIx_FillRect(float x, float y, float width, float height,
-                         const float* color)
+static struct nk_font* font;
+static struct nk_font_atlas atlas;
+static struct nk_draw_null_texture tex_null;
+
+static void nuklear_init(void)
 {
-    trap_R_SetColor(color);
+    char* font_data;
+    int size;
+    fileHandle_t f;
+    int width, height;
+    const void* baked;
+    qhandle_t shader;
 
-    trap_R_DrawStretchPic(x, y, width, height, 0, 0, 0, 0, plzwork);
+    size = trap_FS_FOpenFile("fonts/AdwaitaMono-Italic.ttf", &f, FS_READ);
+    font_data = stbm_alloc(NULL, heap, size, 0);
+    trap_FS_Read(font_data, size, f);
+    trap_FS_FCloseFile(f);
 
-    trap_R_SetColor(NULL);
+    nk_font_atlas_init(&atlas, &nuklear_allocator);
+    nk_font_atlas_begin(&atlas);
+
+    font = nk_font_atlas_add_from_memory(&atlas, font_data, size, 20, NULL);
+    stbm_free(NULL, heap, font_data);
+
+    baked = nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
+    WriteTGA("fonts/atlas.tga", baked, width, height);
+    shader = trap_R_RegisterShaderNoMip("fonts/atlas");
+
+    nk_font_atlas_end(&atlas, nk_handle_id(shader), &tex_null);
+    nk_font_atlas_cleanup(&atlas);
+
+    nk_init(&ctx, &nuklear_allocator, &font->handle);
+
+    nk_buffer_init(&cmds, &nuklear_allocator, 0x100);
+    nk_buffer_init(&vbuf, &nuklear_allocator, 0x100);
+    nk_buffer_init(&ebuf, &nuklear_allocator, 0x100);
+
+    nk_style_load_all_cursors(&ctx, atlas.cursors);
 }
 
-static void UIx_DrawRect(float x, float y, float width, float height,
-                         const float* color)
-{
-    trap_R_SetColor(color);
+//
+// actual shit
+//
+static refdef_t refdef;
 
-    trap_R_DrawStretchPic(x, y, width, 1, 0, 0, 0, 0, plzwork);
-    trap_R_DrawStretchPic(x, y, 1, height, 0, 0, 0, 0, plzwork);
-    trap_R_DrawStretchPic(x, y + height - 1, width, 1, 0, 0, 0, 0, plzwork);
-    trap_R_DrawStretchPic(x + width - 1, y, 1, height, 0, 0, 0, 0, plzwork);
-
-    trap_R_SetColor(NULL);
-}
-
-size_t strlen(const char* string)
-{
-    const char* s;
-
-    s = string;
-    while (*s) {
-        s++;
-    }
-    return s - string;
-}
-
-static int Text_Width(const char* text, float scale, int limit)
-{
-    int count, len;
-    float out;
-    glyphInfo_t* glyph;
-    float useScale;
-    const char* s = text;
-    fontInfo_t* font = &idc;
-    useScale = scale * font->glyphScale;
-    out = 0;
-    if (text) {
-        len = strlen(text);
-        if (limit > 0 && len > limit) {
-            len = limit;
-        }
-        count = 0;
-        while (s && *s && count < len) {
-            if (0) {
-                s += 2;
-                continue;
-            }
-            glyph = &font->glyphs[(int)*s];
-            out += glyph->xSkip;
-            s++;
-            count++;
-        }
-    }
-    return out * useScale;
-}
-
-static int Text_Height(const char* text, float scale, int limit)
-{
-    int len, count;
-    float max;
-    glyphInfo_t* glyph;
-    float useScale;
-    const char* s = text;  // bk001206 - unsigned
-    fontInfo_t* font = &idc;
-
-    useScale = scale * font->glyphScale;
-    max = 0;
-    if (text) {
-        len = strlen(text);
-        if (limit > 0 && len > limit) {
-            len = limit;
-        }
-        count = 0;
-        while (s && *s && count < len) {
-            if (Q_IsColorString(s)) {
-                s += 2;
-                continue;
-            }
-            glyph = &font->glyphs[(
-               int)*s];  // TTimo: FIXME: getting nasty warnings without the
-                         // cast, hopefully this doesn't break the VM build
-            if (max < glyph->height) {
-                max = glyph->height;
-            }
-            s++;
-            count++;
-        }
-    }
-    return max * useScale;
-}
-
-static void Text_PaintChar(float x, float y, float width, float height,
-                           float scale, float s, float t, float s2, float t2,
-                           qhandle_t hShader)
-{
-    float w, h;
-    w = width * scale;
-    h = height * scale;
-    // UI_AdjustFrom640(&x, &y, &w, &h);
-    trap_R_DrawStretchPic(x, y, w, h, s, t, s2, t2, hShader);
-}
-
-static void Text_Paint(float x, float y, float scale, vec4_t color,
-                       const char* text, float adjust, int limit)
-{
-    int len, count;
-    vec4_t newColor;
-    glyphInfo_t* glyph;
-    float useScale;
-    fontInfo_t* font = &idc;
-    useScale = scale * font->glyphScale;
-    if (text) {
-        const char* s = text;  // bk001206 - unsigned
-        trap_R_SetColor(color);
-        memcpy(&newColor[0], &color[0], sizeof(vec4_t));
-        len = strlen(text);
-        if (limit > 0 && len > limit) {
-            len = limit;
-        }
-        count = 0;
-        while (s && *s && count < len) {
-            glyph = &font->glyphs[(
-               int)*s];  // TTimo: FIXME: getting nasty warnings without the
-                         // cast, hopefully this doesn't break the VM build
-                         // int yadj = Assets.textFont.glyphs[text[i]].bottom +
-            // Assets.textFont.glyphs[text[i]].top; float yadj = scale *
-            // (Assets.textFont.glyphs[text[i]].imageHeight -
-            // Assets.textFont.glyphs[text[i]].height);
-            if (0) {
-                // memcpy(newColor, g_color_table[ColorIndex(*(s + 1))],
-                //        sizeof(newColor));
-                // newColor[3] = color[3];
-                // trap_R_SetColor(newColor);
-                // s += 2;
-                // continue;
-            } else {
-                float yadj = useScale * glyph->top;
-                // if (style == 0) {
-                //     int ofs = style == 0 ? 1 : 2;
-                //     colorBlack[3] = newColor[3];
-                //     trap_R_SetColor(colorBlack);
-                //     Text_PaintChar(x + ofs, y - yadj + ofs,
-                //     glyph->imageWidth,
-                //                    glyph->imageHeight, useScale, glyph->s,
-                //                    glyph->t, glyph->s2, glyph->t2,
-                //                    glyph->glyph);
-                //     trap_R_SetColor(newColor);
-                //     colorBlack[3] = 1.0;
-                // }
-                Text_PaintChar(x, y - yadj, glyph->imageWidth,
-                               glyph->imageHeight, useScale, glyph->s, glyph->t,
-                               glyph->s2, glyph->t2, glyph->glyph);
-
-                x += (glyph->xSkip * useScale) + adjust;
-                s++;
-                count++;
-            }
-        }
-        trap_R_SetColor(NULL);
-    }
-}
-
-static float text_width(nk_handle handle, float height, const char* text,
-                        int len)
-{
-    return Text_Width(text, 16.f / 48.f, len);
-    // return len * 8;
-}
-
-static void draw_poly(int num_verts, vec2_t* verts, const byte color[4])
+static void refdef_init(void)
 {
     float znear = trap_Cvar_VariableValue("r_znear");
-    polyVert_t poly_verts[64];
-    refdef_t refdef;
-    int i, j;
-
-    if (num_verts > 64) num_verts = 64;
-
-    for (i = 0; i < num_verts; i++) {
-        for (j = 0; j < 4; j++) {
-            poly_verts[i].modulate[j] = color[j];
-        }
-        VectorSet(poly_verts[i].xyz, verts[i][0], verts[i][1], 0);
-        poly_verts[i].st[0] = poly_verts[i].st[1] = 0;
-    }
-
-    // TODO this can be caclculated once
-    memset(&refdef, 0, sizeof(refdef));
     refdef.width = 1600;
     refdef.height = 900;
     refdef.fov_x = refdef.fov_y = 90;
@@ -219,46 +172,64 @@ static void draw_poly(int num_verts, vec2_t* verts, const byte color[4])
     refdef.viewaxis[2][1] = -znear * 2 / refdef.height;
     refdef.viewaxis[0][2] = 1;
     VectorSet(refdef.vieworg, refdef.width / 2.0, refdef.height / 2.0, -znear);
+}
+
+static void draw_triangles(int num_triangles, unsigned short* indices,
+                           polyVert_t* verts, qhandle_t shader)
+{
+    polyVert_t tri[3];
+    int i, j;
 
     trap_R_ClearScene();
-    trap_R_AddPolyToScene(trap_R_RegisterShaderNoMip("white"), num_verts,
-                          poly_verts);
+    for (i = 0; i < num_triangles; i++) {
+        for (j = 0; j < 3; j++) {
+            tri[j] = verts[*indices++];
+            tri[j].xyz[2] = 0;
+        }
+        trap_R_AddPolyToScene(shader, 3, tri);
+    }
     trap_R_RenderScene(&refdef);
+}
+
+static void WriteTGA(char* filename, const byte* data, int width, int height)
+{
+    fileHandle_t f;
+    byte buffer[18];
+    int c, x, y;
+
+    trap_FS_FOpenFile(filename, &f, FS_WRITE);
+
+    memset(buffer, 0, sizeof(buffer));
+    buffer[2] = 2;  // uncompressed type
+    buffer[12] = width & 255;
+    buffer[13] = width >> 8;
+    buffer[14] = height & 255;
+    buffer[15] = height >> 8;
+    buffer[16] = 32;  // pixel size
+
+    trap_FS_Write(buffer, sizeof(buffer), f);
+
+    c = width * height * 4;
+    for (y = height - 1; y >= 0; y--) {
+        for (x = 0; x < width; x++) {
+            int i = ((y * width) + x) * 4;
+            // swap rgb to bgr
+            trap_FS_Write(&data[i + 2], 1, f);
+            trap_FS_Write(&data[i + 1], 1, f);
+            trap_FS_Write(&data[i + 0], 1, f);
+            trap_FS_Write(&data[i + 3], 1, f);
+        }
+    }
+
+    trap_FS_FCloseFile(f);
 }
 
 DEFINE_HOOK(void, UI_Init, (void))
     ORIGINAL(UI_Init)();
 
-    font.userdata.ptr = NULL;
-    font.height = 16;
-    font.width = text_width;
-    nk_init_fixed(&ctx, memory, sizeof(memory), &font);
-
-    {
-        static struct nk_cursor arrow, resize;
-        arrow.img.handle.id =
-           trap_R_RegisterShaderNoMip("textures/cursors/arrow");
-        arrow.img.w = 32;
-        arrow.img.h = 32;
-        arrow.size.x = 32;
-        arrow.size.y = 32;
-        resize.img.handle.id =
-           trap_R_RegisterShaderNoMip("textures/cursors/resize");
-        resize.img.w = 32;
-        resize.img.h = 32;
-        resize.size.x = 32;
-        resize.size.y = 32;
-        resize.offset.x = 8;
-        resize.offset.y = 8;
-        nk_style_load_cursor(&ctx, NK_CURSOR_ARROW, &arrow);
-        nk_style_load_cursor(&ctx, NK_CURSOR_RESIZE_TOP_RIGHT_DOWN_LEFT,
-                             &resize);
-    }
-    nk_style_show_cursor(&ctx);
-
-    trap_R_RegisterFont("AdwaitaSans-Regular.ttf", 16, &idc);
-    plzwork = trap_R_RegisterShaderNoMip("white");
-    Com_Printf("???????????????? %d\n", Text_Height("A", 16.f / 48.f, 0));
+    heap_init();
+    nuklear_init();
+    refdef_init();
 END_HOOK
 
 static int mouseX, mouseY, mouseDown;
@@ -280,6 +251,7 @@ DEFINE_HOOK(void, UI_Refresh, (int realtime))
     static float value = 0.6f;
 
     (void)ORIGINAL(UI_Refresh);
+    (void)realtime;
 
     if (!(trap_Key_GetCatcher() & KEYCATCH_UI)) {
         return;
@@ -290,141 +262,67 @@ DEFINE_HOOK(void, UI_Refresh, (int realtime))
     nk_input_button(&ctx, NK_BUTTON_LEFT, mouseX, mouseY, mouseDown);
     nk_input_end(&ctx);
 
-    nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
-             NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE |
-                NK_WINDOW_SCALABLE);
-    /* fixed widget pixel width */
-    nk_layout_row_static(&ctx, 30, 80, 1);
-    if (nk_button_label(&ctx, "button")) {
-        /* event handling */
-    }
+    if (
+       nk_begin(&ctx, "Show", nk_rect(50, 50, 220, 220),
+                NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE |
+                   NK_WINDOW_SCALABLE)
+    ) {
+        nk_layout_row_static(&ctx, 30, 80, 1);
+        if (nk_button_label(&ctx, "button")) {
+            Com_Printf("stb used: %d stb max used: %d system used: %d\n",
+                       heap->cur_outstanding_allocations_bytes,
+                       heap->max_outstanding_allocations_bytes, heap_offset);
+        }
 
-    /* custom widget pixel width */
-    nk_layout_row_begin(&ctx, NK_DYNAMIC, 30, 2);
-    {
-        nk_layout_row_push(&ctx, 0.5);
-        nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
-        nk_layout_row_push(&ctx, 0.5);
-        nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+        nk_layout_row_begin(&ctx, NK_DYNAMIC, 30, 2);
+        {
+            nk_layout_row_push(&ctx, 0.5);
+            nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
+            nk_layout_row_push(&ctx, 0.5);
+            nk_slider_float(&ctx, 0, &value, 1.0f, 0.1f);
+        }
+        nk_layout_row_end(&ctx);
     }
-    nk_layout_row_end(&ctx);
     nk_end(&ctx);
 
     trap_Cvar_SetValue("cg_fov", 90 + (value * 60));
 
-    nk_begin(&ctx, "Show 2", nk_rect(50, 50, 220, 220),
-             NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE |
-                NK_WINDOW_SCALABLE);
-    nk_end(&ctx);
-
     {
-        const struct nk_command* cmd;
-        nk_foreach(cmd, &ctx)
-        {
-            switch (cmd->type) {
-                case NK_COMMAND_NOP:
-                    break;
-                case NK_COMMAND_LINE: {
-                    const struct nk_command_line* l =
-                       (const struct nk_command_line*)cmd;
-                    vec2_t poly[4];
-                    poly[0][0] = l->begin.x;
-                    poly[0][1] = l->begin.y;
-                    poly[1][0] = l->begin.x;
-                    poly[1][1] = l->begin.y;
-                    poly[2][0] = l->end.x;
-                    poly[2][1] = l->end.y;
-                    poly[3][0] = l->end.x;
-                    poly[3][1] = l->end.y;
-                    draw_poly(4, poly, (byte*)&l->color);
-                    break;
-                }
-                case NK_COMMAND_RECT: {
-                    const struct nk_command_rect* r =
-                       (const struct nk_command_rect*)cmd;
-                    struct nk_colorf color = nk_color_cf(r->color);
-                    UIx_DrawRect(r->x, r->y, r->w, r->h, (float*)&color);
-                    break;
-                }
-                case NK_COMMAND_RECT_FILLED: {
-                    const struct nk_command_rect_filled* r =
-                       (const struct nk_command_rect_filled*)cmd;
-                    struct nk_colorf color = nk_color_cf(r->color);
-                    UIx_FillRect(r->x, r->y, r->w, r->h, (float*)&color);
-                    break;
-                }
-                case NK_COMMAND_CIRCLE: {
-                    const struct nk_command_circle* c =
-                       (const struct nk_command_circle*)cmd;
-                    struct nk_colorf color = nk_color_cf(c->color);
-                    UIx_DrawRect(c->x, c->y, c->w, c->h, (float*)&color);
-                    break;
-                }
-                case NK_COMMAND_CIRCLE_FILLED: {
-                    const struct nk_command_circle_filled* c =
-                       (const struct nk_command_circle_filled*)cmd;
-#define N 8
-                    vec2_t poly[N];
-                    int i;
-                    for (i = 0; i < N; i++) {
-                        poly[i][0] =
-                           c->x +
-                           ((1 + cos((double)i * 2 * M_PI / N)) * c->w / 2);
-                        poly[i][1] =
-                           c->y +
-                           ((1 + sin((double)i * 2 * M_PI / N)) * c->h / 2);
-                    }
-                    draw_poly(N, poly, (byte*)&c->color);
-                    break;
-                }
-                case NK_COMMAND_TRIANGLE_FILLED: {
-                    const struct nk_command_triangle_filled* t =
-                       (const struct nk_command_triangle_filled*)cmd;
-                    vec2_t poly[3];
-                    poly[0][0] = t->a.x;
-                    poly[0][1] = t->a.y;
-                    poly[1][0] = t->b.x;
-                    poly[1][1] = t->b.y;
-                    poly[2][0] = t->c.x;
-                    poly[2][1] = t->c.y;
-                    draw_poly(3, poly, (byte*)&t->color);
-                    break;
-                }
-                case NK_COMMAND_POLYGON_FILLED: {
-                    const struct nk_command_polygon_filled* p =
-                       (const struct nk_command_polygon_filled*)cmd;
-                    vec2_t poly[64];
-                    int i;
-                    for (i = 0; i < p->point_count && i < 64; i++) {
-                        poly[i][0] = p->points[i].x;
-                        poly[i][1] = p->points[i].y;
-                    }
-                    draw_poly(p->point_count, poly, (byte*)&p->color);
-                    break;
-                }
-                case NK_COMMAND_TEXT: {
-                    const struct nk_command_text* t =
-                       (const struct nk_command_text*)cmd;
-                    struct nk_colorf color = nk_color_cf(t->foreground);
-                    // UI_DrawString(t->x, t->y, t->string, UI_SMALLFONT,
-                    //   (float*)&color);
-                    Text_Paint(t->x, t->y + t->height, 16.f / 48.f,
-                               (float*)&color, t->string, 0.0f, 0);
-                    break;
-                }
-                case NK_COMMAND_IMAGE: {
-                    const struct nk_command_image* i =
-                       (const struct nk_command_image*)cmd;
-                    trap_R_DrawStretchPic(i->x, i->y, i->w, i->h, 0, 0, 1, 1,
-                                          i->img.handle.id);
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-    }
+        static const struct nk_draw_vertex_layout_element vertex_layout[] = {
+           {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(polyVert_t, xyz)},
+           {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(polyVert_t, st)},
+           {NK_VERTEX_COLOR, NK_FORMAT_R8G8B8A8,
+            NK_OFFSETOF(polyVert_t, modulate)},
+           {NK_VERTEX_LAYOUT_END}
+        };
 
+        const struct nk_draw_command* cmd;
+        unsigned short* elems = nk_buffer_memory(&ebuf);
+
+        struct nk_convert_config config;
+        memset(&config, 0, sizeof(config));
+        // config.shape_AA = NK_ANTI_ALIASING_ON;
+        config.vertex_layout = vertex_layout;
+        config.vertex_size = sizeof(polyVert_t);
+        config.vertex_alignment = 4;  // NK_ALIGNOF(polyVert_t);
+        config.tex_null = tex_null;
+        config.circle_segment_count = 16;
+        config.curve_segment_count = 16;
+        config.arc_segment_count = 16;
+        config.global_alpha = 1.0f;
+        nk_convert(&ctx, &cmds, &vbuf, &ebuf, &config);
+
+        nk_draw_foreach(cmd, &ctx, &cmds)
+        {
+            if (!cmd->elem_count) continue;
+            draw_triangles(cmd->elem_count / 3, elems, nk_buffer_memory(&vbuf),
+                           cmd->texture.id);
+            elems += cmd->elem_count;
+        }
+        nk_buffer_clear(&cmds);
+        nk_buffer_clear(&vbuf);
+        nk_buffer_clear(&ebuf);
+    }
     nk_clear(&ctx);
 
     trap_R_SetColor(NULL);
