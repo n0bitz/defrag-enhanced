@@ -211,19 +211,16 @@ void CG_DrawSpawnPoints(void)
     legs.customShader = torso.customShader = head.customShader =
        trap_R_RegisterShader(cg_spawnPointsShader.string);
 
-    sscanf(cg_spawnPointsColor.string, "%f %f %f %f", &freeColor[0],
-           &freeColor[1], &freeColor[2], &freeColor[3]);
+    ParseRGBAf(cg_spawnPointsColor.string, freeColor);
 
     if (cg_spawnPointsColorRed.string[0]) {
-        sscanf(cg_spawnPointsColorRed.string, "%f %f %f %f", &redColor[0],
-               &redColor[1], &redColor[2], &redColor[3]);
+        ParseRGBAf(cg_spawnPointsColorRed.string, redColor);
     } else {
         Vector4Copy(freeColor, redColor);
     }
 
     if (cg_spawnPointsColorBlue.string[0]) {
-        sscanf(cg_spawnPointsColorBlue.string, "%f %f %f %f", &blueColor[0],
-               &blueColor[1], &blueColor[2], &blueColor[3]);
+        ParseRGBAf(cg_spawnPointsColorBlue.string, blueColor);
     } else {
         Vector4Copy(freeColor, blueColor);
     }
