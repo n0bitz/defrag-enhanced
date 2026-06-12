@@ -1,8 +1,9 @@
 #include "cgame.h"
 
 static vec3_t text_origins[MAX_GENTITIES];
-static int spawn_points[MAX_GENTITIES], spawn_point_teams[MAX_GENTITIES],
-   num_spawn_points;
+static int spawn_points[MAX_GENTITIES];
+static int spawn_point_teams[MAX_GENTITIES];
+static int num_spawn_points;
 
 static float DistanceToSegment(vec3_t point, const vec3_t a, const vec3_t b)
 {
