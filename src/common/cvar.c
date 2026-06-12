@@ -26,3 +26,8 @@ qboolean Cvar_ValidateName(const char* name)
 
     return qtrue;
 }
+
+void ParseRGBAf(const char* string, vec4_t rgba)
+{
+    sscanf(string, "%f %f %f %f", &rgba[0], &rgba[1], &rgba[2], &rgba[3]);
+}

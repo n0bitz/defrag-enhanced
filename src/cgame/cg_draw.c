@@ -18,6 +18,7 @@ CG_DrawActive
 */
 DEFINE_HOOK(void, CG_DrawActive, (stereoFrame_t stereoFrame))
     CG_DrawEntityConnections();
+    CG_DrawSpawnPoints();
     ORIGINAL(CG_DrawActive)(stereoFrame);
 END_HOOK
 

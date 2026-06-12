@@ -153,7 +153,9 @@ def build(projects: list[Project]):
         patched_vm.write(build_dir / f"{project.name}.qvm", forge_crc=True)
 
     print("INFO: Building pk3...")
-    with ZipFile(build_dir / "zzzzz-patched-vms.pk3", "w") as pk3:
+    with ZipFile(build_dir / "zzzzz-defrag-enhanced.pk3", "w") as pk3:
+        for asset in Path("assets").rglob("*"):
+            pk3.write(asset, f"{asset.relative_to('assets')}")
         for project in projects:
             qvm_file_name = f"{project.name}.qvm"
             pk3.write(build_dir / qvm_file_name, f"vm/{qvm_file_name}")

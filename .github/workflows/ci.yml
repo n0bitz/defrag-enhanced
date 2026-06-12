@@ -37,7 +37,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f nightly
           git push origin nightly --force
-        
+
       - name: Upload artifacts to nightly
         uses: softprops/action-gh-release@v3
         with:
@@ -46,4 +46,4 @@ jobs:
           body: Download the latest patched VMs.
           prerelease: true
           fail_on_unmatched_files: true
-          files: build/defrag/zzzzz-patched-vms.pk3
+          files: build/defrag/zzzzz-defrag-enhanced.pk3

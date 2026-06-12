@@ -9,9 +9,14 @@
 #include "bg_savestate.h"
 
 // TODO: maybe consider moving this out to a separate header if it gets too big
-#define FOR_EACH_CVAR(V)                  \
-    V(cg_entitiesDraw, "0", CVAR_ARCHIVE) \
-    V(cg_entitiesMaxDistance, "1000", CVAR_ARCHIVE)
+#define FOR_EACH_CVAR(V)                                          \
+    V(cg_entitiesDraw, "0", CVAR_ARCHIVE)                         \
+    V(cg_entitiesMaxDistance, "1000", CVAR_ARCHIVE)               \
+    V(cg_spawnPointsDraw, "0", CVAR_ARCHIVE)                      \
+    V(cg_spawnPointsShader, "dfe/spawnpoint", CVAR_ARCHIVE)       \
+    V(cg_spawnPointsColor, "0.0 1.0 0.5 0.125", CVAR_ARCHIVE)     \
+    V(cg_spawnPointsColorRed, "1.0 0.25 0.25 0.25", CVAR_ARCHIVE) \
+    V(cg_spawnPointsColorBlue, "0.0 0.5 1.0 0.25", CVAR_ARCHIVE)
 
 #define DECLARE_CVAR_(name, default, flags) extern vmCvar_t name;
 FOR_EACH_CVAR(DECLARE_CVAR_)
@@ -29,12 +34,13 @@ struct entity_s {
     char* targetname;
     entity_t** targets;
     vec3_t origin;
+    vec3_t angles;
 };
 
 extern entity_t entities[MAX_GENTITIES];
 extern int num_entities;
 
-void CG_LoadBSP(const char* filename);
+void CG_LoadBSP(void);
 
 //
 // cg_consolecmds.c
@@ -68,6 +74,7 @@ void CG_DrawBoundingBox(const vec3_t origin, const vec3_t mins,
 void CG_AddEntityPOIs(void);
 void CG_AddCEntityPOI(centity_t* cent);
 void CG_DrawEntityConnections(void);
+void CG_DrawSpawnPoints(void);
 
 //
 // cg_mem.c
