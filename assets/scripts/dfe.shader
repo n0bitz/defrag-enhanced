@@ -3,7 +3,7 @@ dfe/spawnpoint
     cull none
     deformvertexes move 0 0 0.5 sin 2 1 0 0.35
     {
-        map *white
+        map $whiteimage
         blendfunc blend
         rgbgen entity
         alphagen entity
