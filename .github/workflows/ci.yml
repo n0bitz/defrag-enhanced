@@ -28,8 +28,26 @@ jobs:
       - name: Check lockfile is up-to-date
         run: uv lock --check
 
+      - name: Generate compilation database
+        run: uv run build.py compile-commands
+
+      - uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: 'file'  # Use .clang-format config file
+          tidy-checks: '' # Use .clang-tidy config file
+          version: 22
+          lines-changed-only: false
+          files-changed-only: false
+          step-summary: true
+      - name: Exit if linting failed
+        if: steps.linter.outputs.checks-failed > 0
+        run: exit 1
+
       - name: Build VMs
-        run: uv run build.py
+        run: uv run build.py pk3
 
       - name: Bump nightly tag
         run: |
