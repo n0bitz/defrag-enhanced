@@ -126,6 +126,15 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
                 float* origin = ent->origin;
                 token = COM_Parse(&p);
                 sscanf(token, "%f %f %f", &origin[0], &origin[1], &origin[2]);
+            } else if (!Q_stricmp(token, "angle")) {
+                float* angles = ent->angles;
+                VectorClear(angles);
+                token = COM_Parse(&p);
+                sscanf(token, "%f", &angles[1]);
+            } else if (!Q_stricmp(token, "angles")) {
+                float* angles = ent->angles;
+                token = COM_Parse(&p);
+                sscanf(token, "%f %f %f", &angles[0], &angles[1], &angles[2]);
             } else if (!Q_stricmp(token, "model")) {
                 token = COM_Parse(&p);
                 if (token[0] == '*') {
@@ -141,15 +150,22 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
     LinkTargets();
 }
 
-void CG_LoadBSP(const char* filename)
+void CG_LoadBSP(void)
 {
+    static qboolean loaded;
     dheader_t header;
     fileHandle_t f;
 
-    trap_FS_FOpenFile(filename, &f, FS_READ);
+    if (loaded) {
+        return;
+    }
+
+    trap_FS_FOpenFile(cgs.mapname, &f, FS_READ);
     trap_FS_Read(&header, sizeof(header), f);
 
     LoadModels(f, &header.lumps[LUMP_MODELS]);
     LoadEntities(f, &header.lumps[LUMP_ENTITIES]);
     trap_FS_FCloseFile(f);
+
+    loaded = qtrue;
 }

@@ -1,6 +1,8 @@
 #include "cgame.h"
 
 static vec3_t text_origins[MAX_GENTITIES];
+static int spawn_points[MAX_GENTITIES], spawn_point_teams[MAX_GENTITIES],
+   num_spawn_points;
 
 static float DistanceToSegment(vec3_t point, const vec3_t a, const vec3_t b)
 {
@@ -53,7 +55,7 @@ static void CG_InitEntityViewer(void)
         return;
     }
 
-    CG_LoadBSP(cgs.mapname);
+    CG_LoadBSP();
 
     // bump name up if it's too close to another one to be readable
     for (i = 0; i < num_entities; i++) {
@@ -63,6 +65,29 @@ static void CG_InitEntityViewer(void)
                 text_origins[i][2] += 8.0f;
             }
         }
+    }
+
+    for (i = 0; i < num_entities; i++) {
+        if (
+           !Q_stricmp(entities[i].classname, "info_player_deathmatch") ||
+           !Q_stricmp(entities[i].classname, "info_player_start")
+        ) {
+            spawn_point_teams[num_spawn_points] = TEAM_FREE;
+        } else if (
+           !Q_stricmp(entities[i].classname, "team_CTF_redplayer") ||
+           !Q_stricmp(entities[i].classname, "team_CTF_redspawn")
+        ) {
+            spawn_point_teams[num_spawn_points] = TEAM_RED;
+        } else if (
+           !Q_stricmp(entities[i].classname, "team_CTF_bluespawn") ||
+           !Q_stricmp(entities[i].classname, "team_CTF_blueplayer")
+        ) {
+            spawn_point_teams[num_spawn_points] = TEAM_BLUE;
+        } else {
+            continue;
+        }
+        spawn_points[num_spawn_points] = i;
+        num_spawn_points++;
     }
 
     initialized = qtrue;
@@ -148,5 +173,110 @@ void CG_AddCEntityPOI(centity_t* cent)
 
     if (text) {
         CG_AddTextPOI(cent->lerpOrigin, text, cg_entitiesMaxDistance.value);
+    }
+}
+
+void CG_DrawSpawnPoints(void)
+{
+    refEntity_t legs, torso, head;
+    orientation_t torsoTag, headTag;
+    clientInfo_t* ci;
+    vec4_t freeColor, redColor, blueColor;
+    int i;
+
+    if (!cg_spawnPointsDraw.integer) {
+        return;
+    }
+
+    CG_InitEntityViewer();
+
+    ci = &cgs.clientinfo[cg.clientNum];
+
+    memset(&legs, 0, sizeof(legs));
+    legs.hModel = ci->legsModel;
+    legs.frame = ci->animations[LEGS_IDLE].firstFrame;
+
+    memset(&torso, 0, sizeof(torso));
+    torso.hModel = ci->torsoModel;
+    torso.frame = ci->animations[TORSO_STAND].firstFrame;
+    trap_R_LerpTag(&torsoTag, legs.hModel, legs.frame, legs.frame, 0.0,
+                   "tag_torso");
+
+    memset(&head, 0, sizeof(head));
+    head.hModel = ci->headModel;
+    trap_R_LerpTag(&headTag, torso.hModel, torso.frame, torso.frame, 0.0,
+                   "tag_head");
+
+    legs.customShader = torso.customShader = head.customShader =
+       trap_R_RegisterShader(cg_spawnPointsShader.string);
+
+    sscanf(cg_spawnPointsColor.string, "%f %f %f %f", &freeColor[0],
+           &freeColor[1], &freeColor[2], &freeColor[3]);
+
+    if (cg_spawnPointsColorRed.string[0]) {
+        sscanf(cg_spawnPointsColorRed.string, "%f %f %f %f", &redColor[0],
+               &redColor[1], &redColor[2], &redColor[3]);
+    } else {
+        Vector4Copy(freeColor, redColor);
+    }
+
+    if (cg_spawnPointsColorBlue.string[0]) {
+        sscanf(cg_spawnPointsColorBlue.string, "%f %f %f %f", &blueColor[0],
+               &blueColor[1], &blueColor[2], &blueColor[3]);
+    } else {
+        Vector4Copy(freeColor, blueColor);
+    }
+
+    for (i = 0; i < num_spawn_points; i++) {
+        entity_t* ent;
+        float* color;
+        float alpha;
+        int j;
+
+        ent = entities + spawn_points[i];
+
+        switch (spawn_point_teams[i]) {
+            case TEAM_RED:
+                color = redColor;
+                break;
+            case TEAM_BLUE:
+                color = blueColor;
+                break;
+            default:
+                color = freeColor;
+                break;
+        }
+
+        alpha = Com_Clamp(
+           0.0, 1.0, (Distance(ent->origin, cg.snap->ps.origin) - 16.0) / 32.0);
+
+        for (j = 0; j < 3; j++) {
+            legs.shaderRGBA[j] = torso.shaderRGBA[j] = head.shaderRGBA[j] =
+               color[j] * 255;
+        }
+
+        legs.shaderRGBA[3] = torso.shaderRGBA[3] = head.shaderRGBA[3] =
+           color[3] * alpha * 255;
+
+        VectorCopy(ent->origin, legs.origin);
+        AnglesToAxis(ent->angles, legs.axis);
+
+        VectorCopy(legs.origin, torso.origin);
+        for (j = 0; j < 3; j++) {
+            VectorMA(torso.origin, torsoTag.origin[j], legs.axis[j],
+                     torso.origin);
+        }
+        MatrixMultiply(torsoTag.axis, legs.axis, torso.axis);
+
+        VectorCopy(torso.origin, head.origin);
+        for (j = 0; j < 3; j++) {
+            VectorMA(head.origin, headTag.origin[j], torso.axis[j],
+                     head.origin);
+        }
+        MatrixMultiply(headTag.axis, torso.axis, head.axis);
+
+        trap_R_AddRefEntityToScene(&legs);
+        trap_R_AddRefEntityToScene(&torso);
+        trap_R_AddRefEntityToScene(&head);
     }
 }
