@@ -1,8 +1,10 @@
 [code]
 Com_Printf = 0x28f
 CG_Argv = 0x2ac
+CG_ConfigString = 0xd6c
 IsItemEntityAvailableToClient = 0x4e14
 UpdateTimer = 0x5fd7
+CheckOB = 0xb72e
 CG_DrawStrlen = 0x1d514
 CG_ResetPlayerEntity = 0x26725
 strlen = 0x2f24d
@@ -21,6 +23,7 @@ COM_Parse = 0x31f8b
 Q_strncpyz = 0x324a6
 Q_stricmp = 0x325be
 va = 0x32755
+Info_ValueForKey = 0x32784
 trap_Print = -1
 trap_Error = -2
 trap_Milliseconds = -3

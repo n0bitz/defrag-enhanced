@@ -36,7 +36,13 @@
                                                                                \
     V(cg_spawnPointsColorBlue, "0.0 0.5 1.0 0.25", CVAR_ARCHIVE,               \
       "The color of blue team spawn points. Set to \"\" to use "               \
-      "cg_spawnPointsColor.")
+      "cg_spawnPointsColor.")                                                  \
+                                                                               \
+    V(cg_overbounceDraw, "0", CVAR_ARCHIVE,                                    \
+      "Highlight surfaces on which an overbounce is possible.")                \
+                                                                               \
+    V(cg_overbounceMaxTestsPerFrame, "50", CVAR_ARCHIVE,                       \
+      "The maximum number of checks for overbounces allowed per frame.")
 
 #define DECLARE_CVAR_(name, default, flags, description) extern vmCvar_t name;
 FOR_EACH_CVAR(DECLARE_CVAR_)
@@ -58,8 +64,12 @@ struct entity_s {
 };
 
 typedef struct {
+    vec(dshader_t) shaders;
     vec(dmodel_t) models;
     vec(entity_t) entities;
+    vec(dplane_t) planes;
+    vec(dbrush_t) brushes;
+    vec(dbrushside_t) brushSides;
 } bsp_t;
 
 extern bsp_t bsp;
@@ -102,6 +112,17 @@ void CG_DrawEntityConnections(void);
 void CG_DrawSpawnPoints(void);
 
 //
+// cg_mem.c
+//
+void* CG_Alloc(int size);
+char* CG_strdup(const char* string);
+
+//
+// cg_overbounce.c
+//
+void CG_DrawOBs(void);
+
+//
 // cg_poi.c
 //
 void CG_AddTextPOI(const vec3_t origin, const char* text, float max_dist);
@@ -127,5 +148,10 @@ qboolean IsItemEntityAvailableToClient(entityState_t* state, int clientNum);
 // Updates some global timer thingy if it changed between snap and prev and
 // returns the timer
 int UpdateTimer(snapshot_t* snap, snapshot_t* prev);
+
+typedef enum { OB_GO = 1, OB_JUMP = 2 } obType_t;
+
+int CheckOB(obType_t obType, float originZ, float velocityZ, float downFloorZ,
+            float viewFloorZ, float* outDist1, float* outDist2);
 
 #endif  // CGAME_HEADER_GUARD__

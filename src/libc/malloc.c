@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void trap_Error(const char* fmt);
 
@@ -6,7 +8,7 @@ void trap_Error(const char* fmt);
 static tlsf_t tlsf;
 
 static int malloc_initialized;
-static char malloc_storage[32 * 1024 * 1024];
+static char malloc_storage[8 * 1024 * 1024];
 
 static void malloc_init(void)
 {

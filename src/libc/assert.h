@@ -1,7 +1,10 @@
 #ifndef ASSERT_HEADER_GUARD__
 #define ASSERT_HEADER_GUARD__
 
-#define assert(condition) ((void)0)
+#define assert(condition)                                                 \
+    ((condition) ? ((void)0)                                              \
+                 : (printf("%s:%d %s\n", __FILE__, __LINE__, #condition), \
+                    trap_Error("assertion failed"), (void)0))
 
 // Unfortunately, ANSI C doesn't have a static_assert, nor will it let us mix
 // statements and declarations, so we need two versions of static_assert...
