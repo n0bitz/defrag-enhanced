@@ -26,3 +26,55 @@ dfe/spawnpoint
         alphagen entity
     }
 }
+
+// Using deformvertexes instead of polygonoffset on the OB shaders to combat
+// z fighting with the surface because polygonoffset effectively pushes the
+// surface toward the viewer, which can cause us to see things through walls in
+// certain cases.
+
+dfe/obHighlight
+{
+    deformvertexes move 0 0 0.1 square 0 1 0 0
+    {
+        map $whiteimage
+        blendfunc gl_src_alpha gl_one
+        rgbgen vertex
+        alphagen vertex
+    }
+}
+
+dfe/obGo
+{
+    sort additive
+    deformvertexes move 0 0 0.1 square 0 1 0 0
+    {
+        map textures/dfe/g.tga
+        blendfunc gl_zero gl_one
+        alphafunc ge128
+        depthwrite
+    }
+    {
+        map textures/dfe/g.tga
+        blendfunc gl_src_alpha gl_one_minus_src_alpha
+        depthfunc equal
+        alphagen vertex
+    }
+}
+
+dfe/obJump
+{
+    sort additive
+    deformvertexes move 0 0 0.1 square 0 1 0 0
+    {
+        map textures/dfe/j.tga
+        blendfunc gl_zero gl_one
+        alphafunc ge128
+        depthwrite
+    }
+    {
+        map textures/dfe/j.tga
+        blendfunc gl_src_alpha gl_one_minus_src_alpha
+        depthfunc equal
+        alphagen vertex
+    }
+}

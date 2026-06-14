@@ -11,6 +11,7 @@
 #include "cg_local.h"
 #include "bg_savestate.h"
 #include "qfiles.h"
+#include "q_math.h"
 
 // TODO: maybe consider moving this out to a separate header if it gets too big
 #define FOR_EACH_CVAR(V)                                                       \
@@ -36,7 +37,29 @@
                                                                                \
     V(cg_spawnPointsColorBlue, "0.0 0.5 1.0 0.25", CVAR_ARCHIVE,               \
       "The color of blue team spawn points. Set to \"\" to use "               \
-      "cg_spawnPointsColor.")
+      "cg_spawnPointsColor.")                                                  \
+                                                                               \
+    V(cg_overbounceDraw, "0", CVAR_ARCHIVE,                                    \
+      "Highlight surfaces on which an overbounce is possible.")                \
+                                                                               \
+    V(cg_overbounceColorGo, "0 0.5 0.75 0.5", CVAR_ARCHIVE,                    \
+      "\"Go\" overbounce highlight color.")                                    \
+                                                                               \
+    V(cg_overbounceColorJump, "0.5 0.5 0.1 0.5", CVAR_ARCHIVE,                 \
+      "\"Jump\" overbounce highlight color.")                                  \
+                                                                               \
+    V(cg_overbounceFadeTime, "0.1", CVAR_ARCHIVE,                              \
+      "The number of seconds it takes for overbounce highlights to fade "      \
+      "fully in or out.")                                                      \
+                                                                               \
+    V(cg_overbounceIgnoreKillOBs, "0", CVAR_ARCHIVE,                           \
+      "Show overbounces even when df_ob_KillOBs is enabled.")                  \
+                                                                               \
+    V(cg_overbounceIgnoreNoOB, "0", CVAR_ARCHIVE,                              \
+      "Show overbounces on no-OB surfaces.")                                   \
+                                                                               \
+    V(cg_overbounceMaxTestsPerFrame, "50", CVAR_ARCHIVE,                       \
+      "The maximum number of checks for overbounces allowed per frame.")
 
 #define DECLARE_CVAR_(name, default, flags, description) extern vmCvar_t name;
 FOR_EACH_CVAR(DECLARE_CVAR_)
@@ -58,8 +81,12 @@ struct entity_s {
 };
 
 typedef struct {
+    vec(dshader_t) shaders;
     vec(dmodel_t) models;
     vec(entity_t) entities;
+    vec(dplane_t) planes;
+    vec(dbrush_t) brushes;
+    vec(dbrushside_t) brushSides;
 } bsp_t;
 
 extern bsp_t bsp;
@@ -92,7 +119,6 @@ FOR_EACH_CONSOLE_COMMAND(DECLARE_COMMAND_)
 //
 void CG_DrawBoundingBox(const vec3_t origin, const vec3_t mins,
                         const vec3_t maxs, const byte color[4]);
-
 //
 // cg_entity_viewer.c
 //
@@ -100,6 +126,11 @@ void CG_AddEntityPOIs(void);
 void CG_AddCEntityPOI(centity_t* cent);
 void CG_DrawEntityConnections(void);
 void CG_DrawSpawnPoints(void);
+
+//
+// cg_overbounce.c
+//
+void CG_DrawOBs(void);
 
 //
 // cg_poi.c
@@ -127,5 +158,54 @@ qboolean IsItemEntityAvailableToClient(entityState_t* state, int clientNum);
 // Updates some global timer thingy if it changed between snap and prev and
 // returns the timer
 int UpdateTimer(snapshot_t* snap, snapshot_t* prev);
+
+// TODO: move to df-headers
+typedef struct {
+    qboolean is_defrag_server;
+    int version;
+    int gametype;
+    int defrag_gametype;
+    int mode;
+    qboolean is_team_gametype;
+    qboolean promode;
+    qboolean obs;
+    int flags;
+    char mapname[64];
+    char route[16];
+    char competition[256];
+    qboolean sv_cheats;
+    char servername[256];
+    char gamename[64];
+    char fs_game[64];
+    int svfps;
+    qboolean g_synchronousClients;
+    int pmove_msec;
+    qboolean sv_pure;
+    int clfps;
+} defragInfo_t;
+
+extern defragInfo_t defragInfo;
+
+typedef enum { OB_BELOW = 0, OB_GO = 1, OB_JUMP = 2, OB_MAX = 17 } obType_t;
+
+// TODO: move to df-headers. is this actually a struct?
+typedef struct {
+    int status[OB_MAX];
+    float lastOffsets[OB_MAX];
+    float offsets[OB_MAX];
+} obInfo_t;
+
+extern obInfo_t obInfo;
+
+// TODO: better names, are these part of a struct?
+extern int obSticky, obWeapon;
+
+extern vmCvar_t df_ob_AllSlopes;
+
+int CheckOB(obType_t obType, float originZ, float velocityZ, float downFloorZ,
+            float viewFloorZ, float* outDist1, float* outDist2);
+qboolean NeedOBInfo(obType_t obType);
+void TraceDown(trace_t* trace, vec3_t origin);
+void TraceCrosshair(trace_t* trace, vec3_t origin, vec3_t viewangles);
 
 #endif  // CGAME_HEADER_GUARD__
