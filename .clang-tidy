@@ -16,7 +16,6 @@ Checks: >
   modernize-*,
   -modernize-macro-to-enum,
   performance-*,
-  -performance-no-int-to-ptr,
   portability-*,
   readability-*,
   -readability-identifier-length,
