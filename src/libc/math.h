@@ -10,5 +10,9 @@ double atan2(double y, double x);
 double tan(double x);
 double fabs(double x);
 double acos(double x);
+double fmin(double x, double y);
+double fmax(double x, double y);
+float fminf(float x, float y);
+float fmaxf(float x, float y);
 
 #endif  // MATH_HEADER_GUARD__

@@ -12,13 +12,14 @@ if TYPE_CHECKING:
 def DF_UpdateTimerAndCheckpoints(qvm: Qvm):
     func = "DF_UpdateTimerAndCheckpoints"
     func_addr = qvm.symbols[func]
+    sv_cheats = qvm.symbols["defragInfo"] + 0x174
 
     # nop the cheats check for regular checkpoint events so we can see
     # checkpoint prints when playing with cheats
     qvm.replace_instructions(
         func_addr + 0x71,
         [
-            I(O.CONST, qvm.symbols["sv_cheats"]),
+            I(O.CONST, sv_cheats),
             I(O.LOAD4),
             I(O.CONST, 0x0),
             I(O.NE, func_addr + 0x9F),
@@ -34,7 +35,7 @@ def DF_UpdateTimerAndCheckpoints(qvm: Qvm):
             I(O.LOCAL, 0x138),
             I(O.CONST, 0x0),
             I(O.STORE4),
-            I(O.CONST, qvm.symbols["sv_cheats"]),
+            I(O.CONST, sv_cheats),
             I(O.LOAD4),
             I(O.LOCAL, 0x138),
             I(O.LOAD4),

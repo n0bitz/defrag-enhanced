@@ -26,3 +26,56 @@ dfe/spawnpoint
         alphagen entity
     }
 }
+
+// We're using deformvertexes instead of polygonoffset to push the OB shaders
+// out a bit because brush sides may be hidden inside objects made of multiple
+// brushes. Since polygonoffset effectively pushes the a toward the viewer,
+// parts of a brush side that would normally be occluded might end up "closer"
+// than the occluder and become visible.
+
+dfe/obHighlight
+{
+    deformvertexes move 0 0 0.1 square 0 1 0 0
+    {
+        map $whiteimage
+        blendfunc gl_src_alpha gl_one
+        rgbgen vertex
+        alphagen vertex
+    }
+}
+
+dfe/obGo
+{
+    sort additive
+    deformvertexes move 0 0 0.1 square 0 1 0 0
+    {
+        map textures/dfe/g.tga
+        blendfunc gl_zero gl_one
+        alphafunc ge128
+        depthwrite
+    }
+    {
+        map textures/dfe/g.tga
+        blendfunc gl_src_alpha gl_one_minus_src_alpha
+        depthfunc equal
+        alphagen vertex
+    }
+}
+
+dfe/obJump
+{
+    sort additive
+    deformvertexes move 0 0 0.1 square 0 1 0 0
+    {
+        map textures/dfe/j.tga
+        blendfunc gl_zero gl_one
+        alphafunc ge128
+        depthwrite
+    }
+    {
+        map textures/dfe/j.tga
+        blendfunc gl_src_alpha gl_one_minus_src_alpha
+        depthfunc equal
+        alphagen vertex
+    }
+}
