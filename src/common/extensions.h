@@ -3,9 +3,9 @@
 
 #include "q_shared.h"
 
-typedef void (*extensionTrap_t)(void);
+typedef void (*trapExtension_t)(void);
 
-qboolean GetExtension(const char* name, extensionTrap_t* trap);
+qboolean GetTrapExtension(const char* name, trapExtension_t* trap);
 
 qboolean trap_GetValue(char* value, int valueSize, const char* key);
 void trap_Cvar_SetDescription_Q3E(const char* name, const char* description);

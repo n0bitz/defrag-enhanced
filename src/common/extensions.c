@@ -1,4 +1,5 @@
 #include "extensions.h"
+#include "assert.h"
 
 // This is available in all VMs
 void trap_Cvar_VariableStringBuffer(const char* var_name, char* buffer,
@@ -30,12 +31,14 @@ qboolean trap_GetValue(char* value, int valueSize, const char* key)
     return trap_GetValue(value, valueSize, key);
 }
 
-qboolean GetExtension(const char* name, extensionTrap_t* trap)
+qboolean GetTrapExtension(const char* name, trapExtension_t* trap)
 {
     char value[16];
+    static_assert(sizeof(value) >= sizeof("-2147483648"),
+                  "value buffer too small");
 
     if (trap_GetValue(value, sizeof(value), name)) {
-        *trap = (extensionTrap_t)~atoi(value);
+        *trap = (trapExtension_t)~atoi(value);
         return qtrue;
     }
 
@@ -44,15 +47,19 @@ qboolean GetExtension(const char* name, extensionTrap_t* trap)
 
 void trap_Cvar_SetDescription_Q3E(const char* name, const char* description)
 {
-    static void (*trap_Cvar_SetDescription_Q3E)(const char* name,
-                                                const char* description);
+    static void (*trap_ptr)(const char* name, const char* description);
 
-    if (!trap_Cvar_SetDescription_Q3E) {
-        GetExtension("trap_Cvar_SetDescription_Q3E",
-                     (extensionTrap_t*)&trap_Cvar_SetDescription_Q3E);
+    if (!trap_ptr) {
+        if (!GetTrapExtension("trap_Cvar_SetDescription_Q3E",
+                              (trapExtension_t*)&trap_ptr)) {
+            trap_ptr = trap_Cvar_SetDescription_Q3E;
+        }
     }
 
-    if (trap_Cvar_SetDescription_Q3E) {
-        trap_Cvar_SetDescription_Q3E(name, description);
+    if (trap_ptr == trap_Cvar_SetDescription_Q3E) {
+        // no engine extension, fallback to doing nothing
+        return;
     }
+
+    trap_ptr(name, description);
 }
