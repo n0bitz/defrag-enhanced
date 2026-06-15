@@ -3,22 +3,39 @@
 
 #include "assert.h"
 #include "cvar.h"
+#include "extensions.h"
 #include "hook.h"
 #include "log.h"
 #include "cg_local.h"
 #include "bg_savestate.h"
 
 // TODO: maybe consider moving this out to a separate header if it gets too big
-#define FOR_EACH_CVAR(V)                                          \
-    V(cg_entitiesDraw, "0", CVAR_ARCHIVE)                         \
-    V(cg_entitiesMaxDistance, "1000", CVAR_ARCHIVE)               \
-    V(cg_spawnPointsDraw, "0", CVAR_ARCHIVE)                      \
-    V(cg_spawnPointsShader, "dfe/spawnpoint", CVAR_ARCHIVE)       \
-    V(cg_spawnPointsColor, "0.0 1.0 0.5 0.125", CVAR_ARCHIVE)     \
-    V(cg_spawnPointsColorRed, "1.0 0.25 0.25 0.25", CVAR_ARCHIVE) \
-    V(cg_spawnPointsColorBlue, "0.0 0.5 1.0 0.25", CVAR_ARCHIVE)
+#define FOR_EACH_CVAR(V)                                                       \
+    V(cg_entitiesDraw, "0", CVAR_ARCHIVE,                                      \
+      "Draw map entities and the connections between them.")                   \
+                                                                               \
+    V(cg_entitiesMaxDistance, "1000", CVAR_ARCHIVE,                            \
+      "The distance at which entities drawn by cg_entitiesDraw will fade out " \
+      "of view.")                                                              \
+                                                                               \
+    V(cg_spawnPointsDraw, "0", CVAR_ARCHIVE,                                   \
+      "Draw player models at spawn points.")                                   \
+                                                                               \
+    V(cg_spawnPointsShader, "dfe/spawnpoint", CVAR_ARCHIVE,                    \
+      "The shader used by cg_spawnPointsDraw.")                                \
+                                                                               \
+    V(cg_spawnPointsColor, "0.0 1.0 0.5 0.125", CVAR_ARCHIVE,                  \
+      "The color of non-team spawn points.")                                   \
+                                                                               \
+    V(cg_spawnPointsColorRed, "1.0 0.25 0.25 0.25", CVAR_ARCHIVE,              \
+      "The color of red team spawn points. Set to \"\" to use "                \
+      "cg_spawnPointsColor.")                                                  \
+                                                                               \
+    V(cg_spawnPointsColorBlue, "0.0 0.5 1.0 0.25", CVAR_ARCHIVE,               \
+      "The color of blue team spawn points. Set to \"\" to use "               \
+      "cg_spawnPointsColor.")
 
-#define DECLARE_CVAR_(name, default, flags) extern vmCvar_t name;
+#define DECLARE_CVAR_(name, default, flags, description) extern vmCvar_t name;
 FOR_EACH_CVAR(DECLARE_CVAR_)
 #undef DECLARE_CVAR_
 
