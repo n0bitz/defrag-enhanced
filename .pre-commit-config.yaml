@@ -36,13 +36,22 @@ repos:
         require_serial: true
         additional_dependencies: []
         minimum_pre_commit_version: "2.9.2"
+      
+      - id: format-symbols
+        name: format symbols
+        description: "Format project symbols"
+        entry: uv run scripts/format_symbols.py
+        language: unsupported
+        files: ^src/.+/symbols\.toml$
+        args: []
+        additional_dependencies: []
 
   # This should be before cpp-linter-hooks as that needs this
   - repo: local
     hooks:
       - id: generate-compile-commands
         name: generate compile_commands.json
-        entry: "uv run build.py compile-commands"
+        entry: uv run build.py compile-commands
         language: unsupported
         always_run: true
         pass_filenames: false
