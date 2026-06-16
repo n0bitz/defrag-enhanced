@@ -5,7 +5,6 @@ strlen = 0x5bfc
 atoi = 0x5f67
 sscanf = 0x64f2
 Q_stricmp = 0xaab7
-# ----------------------------- SYSCALLS -----------------------------
 trap_Printf = -1
 trap_Error = -2
 trap_Milliseconds = -3
@@ -161,7 +160,7 @@ trap_BotAvoidGoalTime = -541
 trap_BotInitLevelItems = -542
 trap_BotUpdateEntityItems = -543
 trap_BotLoadItemWeights = -544
-# trap_BotFreeItemWeights = -546 (NOTE: unused incorrect alias with below?)
+trap_BotFreeItemWeights = -545 # id incorrectly has this as -546 too
 trap_BotSaveGoalFuzzyLogic = -546
 trap_BotAllocGoalState = -547
 trap_BotFreeGoalState = -548
@@ -199,7 +198,6 @@ trap_BotLibLoadSource = -579
 trap_BotLibFreeSource = -580
 trap_BotLibReadToken = -581
 trap_BotLibSourceFileAndLine = -582
-# --------------------------- SYSCALLS END ---------------------------
 
 [hooks]
 G_InitGame = 0x2bb
