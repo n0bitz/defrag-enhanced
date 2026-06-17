@@ -195,6 +195,9 @@ def patch(project: Project):
     if missing_hook_symbols:
         raise Exception(f"Missing hook symbol(s) for: {missing_hook_symbols}")
 
+    if redefined_symbols := qvm.symbols.keys() & to_hook_symbols.keys():
+        raise Exception(f"Following hook symbol(s) were redefined: {redefined_symbols}")
+
     # quatch needs a symbol for init_point, but if it's hooked we hide it...
     # just insert the original init_point symbol for quatch to use now
     # that all the compilation/linking is done
