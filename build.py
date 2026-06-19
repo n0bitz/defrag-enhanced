@@ -85,9 +85,26 @@ class Project:
             cflags.append(f"-DORIG_SUFFIX={self.orig_suffix}")
             cflags.extend(f"-I{include}" for include in self.include_paths)
         else:
-            # So we can do some ifdef macro hacks to generate additional diagnostics
-            # that noop in real build
-            cflags.append("-DLINTER")
+            # Make clang behave similar to LCC (ie. ANSI C + single line
+            # comments + 32 bits) and treats warnings as errors like we do
+            # for quatch compiled code.
+            # NOTE: It unfortunately still diverges from LCC on some things
+            # (eg. sizeof(double) is 8 in clang and 4 in LCC), but there
+            # seems to be no way at present to make it work besides forking
+            # llvm/clang. It shouldn't be a problem for the most part though
+            # as no one should be using such types to begin with.
+            # NOTE: This section is just to emulate LCC, keep any additional
+            # warning or diagnostic flags in .clang-tidy instead.
+            cflags.extend(
+                (
+                    "-ansi",
+                    "-pedantic-errors",
+                    "-Wno-comment",
+                    "-Werror",
+                    "-m32",
+                )
+            )
+
             # It isn't a valid attribute in ANSI C, while some of the sdk
             # headers use it gated behind platform ifdefs. Our linting has some
             # of those platform defines set causing bail outs after several
@@ -95,31 +112,17 @@ class Project:
             # rather than finding and undef-ing the offending platform defines
             # since inline is eventually a reserved attribute anyway.
             cflags.append("-Dinline=")
+
+            # So we can do some ifdef macro hacks to generate additional diagnostics
+            # that noop in real build
+            cflags.append("-DLINTER")
+
             for include in self.include_paths:
                 if include.startswith("src/sdk"):
                     # to prevent diagnosing sdk stuff while still inclduing them
                     cflags.extend(("-isystem", include))
                 else:
                     cflags.append(f"-I{include}")
-                # Make clang behave similar to LCC (ie. ANSI C + single line
-                # comments + 32 bits) and treats warnings as errors like we do
-                # for quatch compiled code.
-                # NOTE: It unfortunately still diverges from LCC on some things
-                # (eg. sizeof(double) is 8 in clang and 4 in LCC), but there
-                # seems to be no way at present to make it work besides forking
-                # llvm/clang. It shouldn't be a problem for the most part though
-                # as no one should be using such types to begin with.
-                # NOTE: This section is just to emulate LCC, keep any additional
-                # warning or diagnostic flags in .clang-tidy instead.
-                cflags.extend(
-                    (
-                        "-ansi",
-                        "-pedantic-errors",
-                        "-Wno-comment",
-                        "-Werror",
-                        "-m32",
-                    )
-                )
 
         return cflags
 
