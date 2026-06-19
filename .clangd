@@ -2,6 +2,9 @@ Diagnostics:
   # Likely not useful since we just include a mega file like Q3 does (eg. cg_local.h)
   UnusedIncludes: None
 
+Completion:
+  HeaderInsertion: Never # More annoying than helpful
+
 ---
 
 If:
