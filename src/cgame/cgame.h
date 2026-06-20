@@ -4,6 +4,7 @@
 #include "assert.h"
 #include "cvar.h"
 #include "extensions.h"
+#include "fs.h"
 #include "hook.h"
 #include "log.h"
 #include "cg_local.h"

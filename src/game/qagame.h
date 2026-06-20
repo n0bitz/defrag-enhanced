@@ -2,6 +2,7 @@
 #define QAGAME_HEADER_GUARD__
 
 #include "assert.h"
+#include "fs.h"
 #include "hook.h"
 #include "log.h"
 #include "g_local.h"

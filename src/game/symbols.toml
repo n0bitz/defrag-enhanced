@@ -50,6 +50,7 @@ trap_RealTime = -42
 trap_SnapVector = -43
 trap_TraceCapsule = -44
 trap_EntityContactCapsule = -45
+trap_FS_Seek = -46
 memset = -101
 memcpy = -102
 strncpy = -103
