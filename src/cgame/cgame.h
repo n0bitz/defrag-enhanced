@@ -72,9 +72,10 @@ typedef qboolean consoleCommandStatus_t;
 #define CON_CMD_NOT_HANDLED qfalse
 #define CON_CMD_HANDLED qtrue
 
-#define FOR_EACH_CONSOLE_COMMAND(V) \
-    V("savestate", CG_SaveState_f)  \
-    V(RESTORE_STATE_CMD, CG_RestoreState_f)
+#define FOR_EACH_CONSOLE_COMMAND(V)         \
+    V("savestate", CG_SaveState_f)          \
+    V(RESTORE_STATE_CMD, CG_RestoreState_f) \
+    V("cgMallocStats", CG_MallocStats_f)
 
 #define DECLARE_COMMAND_(name, func) consoleCommandStatus_t func(void);
 FOR_EACH_CONSOLE_COMMAND(DECLARE_COMMAND_)
@@ -93,12 +94,6 @@ void CG_AddEntityPOIs(void);
 void CG_AddCEntityPOI(centity_t* cent);
 void CG_DrawEntityConnections(void);
 void CG_DrawSpawnPoints(void);
-
-//
-// cg_mem.c
-//
-void* CG_Alloc(int size);
-char* CG_strdup(const char* string);
 
 //
 // cg_poi.c

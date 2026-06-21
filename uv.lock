@@ -139,7 +139,7 @@ wheels = [
 [[package]]
 name = "quatch"
 version = "0.0.1"
-source = { git = "https://github.com/birdstakes/quatch.git#b441af21e13dac0cd7451e9b5a1b3458904d32e5" }
+source = { git = "https://github.com/birdstakes/quatch.git#beabee92b5fe6d008685f864c5f69b8a7b8e5f8d" }
 
 [[package]]
 name = "ruff"

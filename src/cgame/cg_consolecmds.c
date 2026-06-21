@@ -40,3 +40,13 @@ DEFINE_HOOK(void, CG_InitConsoleCommands, (void))
         trap_AddCommand(commandTable[i].name);
     }
 END_HOOK
+
+consoleCommandStatus_t CG_MallocStats_f(void)
+{
+    malloc_stats_t stats = malloc_stats();
+    Com_Printf("cgame malloc:\n");
+    Com_Printf("  %d bytes used\n", stats.used);
+    Com_Printf("  %d bytes free\n", stats.free);
+    Com_Printf("  %d bytes total\n", stats.used + stats.free);
+    return CON_CMD_HANDLED;
+}
