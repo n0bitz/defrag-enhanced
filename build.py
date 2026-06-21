@@ -10,7 +10,11 @@ from zipfile import ZipFile
 
 
 def main():
-    COMMON_SOURCES = list(glob("src/common/*.c"))
+    COMMON_SOURCES = (
+        list(glob("src/common/*.c"))
+        + list(glob("src/libc/*.c"))
+        + ["src/third_party/tlsf/tlsf.c"]
+    )
     PROJECTS = [
         Project(
             name="cgame",
@@ -23,6 +27,8 @@ def main():
                 "src/game",
                 "src/sdk/cgame",
                 "src/sdk/game",
+                "src/libc",
+                "src/third_party",
             ],
             extra_defines=["CGAME"],
         ),
@@ -31,7 +37,13 @@ def main():
             init_point="G_InitGame",
             symbols_path="src/game/symbols.toml",
             source_files=list(glob("src/game/*.c")) + COMMON_SOURCES,
-            include_paths=["src/game", "src/common", "src/sdk/game"],
+            include_paths=[
+                "src/game",
+                "src/common",
+                "src/sdk/game",
+                "src/libc",
+                "src/third_party",
+            ],
         ),
     ]
 
@@ -79,7 +91,12 @@ class Project:
     orig_suffix: str = field(init=False)
 
     def cflags(self, for_build):
-        cflags = [f"-D{define}" for define in ["Q3_VM", "DEFRAG", *self._extra_defines]]
+        cflags = [f"-D{define}" for define in ["DEFRAG", *self._extra_defines]]
+
+        # This is a hack to prevent bg_lib.h from being included by q_shared.h since it
+        # conflicts with our libc implementation.
+        cflags.append("-UQ3_VM")
+
         if for_build:
             cflags.append(f"-DHOOK_SUFFIX={self.hook_suffix}")
             cflags.append(f"-DORIG_SUFFIX={self.orig_suffix}")
@@ -118,8 +135,10 @@ class Project:
             cflags.append("-DLINTER")
 
             for include in self.include_paths:
-                if include.startswith("src/sdk"):
-                    # to prevent diagnosing sdk stuff while still inclduing them
+                if include.startswith("src/sdk") or include.startswith(
+                    "src/third_party"
+                ):
+                    # to prevent diagnosing external stuff while still including them
                     cflags.extend(("-isystem", include))
                 else:
                     cflags.append(f"-I{include}")

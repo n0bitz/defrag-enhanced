@@ -65,4 +65,6 @@ repos:
       - id: clang-format
         args: [--style=file, --version=22.1]
       - id: clang-tidy
-        args: [--compile-commands=., --checks=.clang-tidy, --version=22.1, --fix, -fix-errors]
+        # This hook doesn't respect our inner .clang-tidy, so we have to filter it here again.
+        files: ^src/(?!third_party/).*$
+        args: [--compile-commands=., --checks=.clang-tidy, --allow-no-checks, --version=22.1, --fix, -fix-errors]

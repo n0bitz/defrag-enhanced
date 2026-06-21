@@ -73,7 +73,7 @@ static void LinkTargets(void)
         if (!num_targets) continue;
 
         src->targets =
-           (entity_t**)CG_Alloc((num_targets + 1) * sizeof(src->targets[0]));
+           (entity_t**)malloc((num_targets + 1) * sizeof(src->targets[0]));
         if (!src->targets) continue;
 
         FindTargets(src, src->targets, num_targets);
@@ -115,13 +115,13 @@ static void LoadEntities(fileHandle_t f, lump_t* lump)
             if (token[0] == '}') break;
             if (!Q_stricmp(token, "classname")) {
                 token = COM_Parse(&p);
-                ent->classname = CG_strdup(token);
+                ent->classname = strdup(token);
             } else if (!Q_stricmp(token, "target")) {
                 token = COM_Parse(&p);
-                ent->target = CG_strdup(token);
+                ent->target = strdup(token);
             } else if (!Q_stricmp(token, "targetname")) {
                 token = COM_Parse(&p);
-                ent->targetname = CG_strdup(token);
+                ent->targetname = strdup(token);
             } else if (!Q_stricmp(token, "origin")) {
                 float* origin = ent->origin;
                 token = COM_Parse(&p);

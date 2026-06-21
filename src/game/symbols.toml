@@ -2,8 +2,11 @@
 Com_Printf = 0x45a
 DF_PlacePlayerTeleport = 0x45f0
 strlen = 0x5bfc
+strcmp = 0x5c8f
+memmove = 0x5d5d
 atoi = 0x5f67
 sscanf = 0x64f2
+Q_strncpyz = 0xa99f
 Q_stricmp = 0xaab7
 trap_Printf = -1
 trap_Error = -2
