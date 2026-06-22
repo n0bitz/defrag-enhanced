@@ -2,6 +2,7 @@
 Com_Printf = 0x28f
 CG_Argv = 0x2ac
 IsItemEntityAvailableToClient = 0x4e14
+DF_UpdateTimerAndCheckpoints = 0x5248
 UpdateTimer = 0x5fd7
 CG_DrawStrlen = 0x1d514
 CG_ResetPlayerEntity = 0x26725

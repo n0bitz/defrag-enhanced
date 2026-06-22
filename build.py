@@ -1,4 +1,5 @@
 import json
+import importlib
 import tomllib
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from dataclasses import dataclass, KW_ONLY, field, InitVar
@@ -30,6 +31,7 @@ def main():
                 "src/libc",
                 "src/third_party",
             ],
+            instruction_patch_files=["src/cgame/instruction_patches.py"],
             extra_defines=["CGAME"],
         ),
         Project(
@@ -78,6 +80,10 @@ class Project:
     symbols_path: str
     source_files: list[str]
     include_paths: list[str]
+    # WARNING: Please avoid using instruction level patches if possible. These
+    # should only be used when the alternatives are too painful, unstable or
+    # hard to understand.
+    instruction_patch_files: list[str] | None = None
     # Nothing besides cflags should need this, so `InitVar` to hide it in an
     # internal field in `__post_init__`. Also not  `= []` as it would be a
     # shared mutable default.
@@ -184,7 +190,6 @@ def build(projects: list[Project]):
 
 
 def patch(project: Project):
-    init_point = project.init_point
     symbols, to_hook_symbols = process_symbols(project)
     qvm = Qvm(f"vm/{project.name}.qvm", symbols)
 
@@ -220,11 +225,19 @@ def patch(project: Project):
     if redefined_symbols := qvm.symbols.keys() & to_hook_symbols.keys():
         raise Exception(f"Following hook symbol(s) were redefined: {redefined_symbols}")
 
-    # quatch needs a symbol for init_point, but if it's hooked we hide it...
-    # just insert the original init_point symbol for quatch to use now
-    # that all the compilation/linking is done
-    if init_point in to_hook_symbols:
-        qvm.symbols[init_point] = to_hook_symbols[init_point]
+    # now that all the compilation/linking is done, bring the original symbols
+    # that we hid back in for quatch and instruction level patches to use
+    qvm.symbols |= to_hook_symbols
+
+    def patch_func_decorator(f):
+        f(qvm)
+        return f
+
+    for patch_file in project.instruction_patch_files or []:
+        spec = importlib.util.spec_from_file_location(patch_file, patch_file)
+        patcher = importlib.util.module_from_spec(spec)
+        patcher.__dict__["patch_func"] = patch_func_decorator
+        spec.loader.exec_module(patcher)
 
     return qvm
 

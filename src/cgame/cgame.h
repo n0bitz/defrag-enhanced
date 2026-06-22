@@ -108,7 +108,7 @@ void CG_DrawPOIs(void);
 qboolean SaveCurrentState(saveState_t* out);
 
 //
-// og df stuff that you don't know/care where to place
+// df_stuff.c (og df stuff that you don't know/care where to place)
 //
 extern vmCvar_t cg_drawBBox;
 extern vmCvar_t df_cl_alwaysDrawItems;
