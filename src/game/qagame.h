@@ -21,6 +21,7 @@ FOR_EACH_CLIENT_COMMAND(DECLARE_COMMAND_)
 //
 // og df stuff that you don't know/care where to place
 //
+void DF_ResetClientWaits(int clientNum);
 void DF_PlacePlayerTeleport(gentity_t* ent, vec3_t origin, vec3_t angles,
                             vec3_t velocity);
 
