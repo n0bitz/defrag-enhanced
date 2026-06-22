@@ -2,6 +2,8 @@
 Com_Printf = 0x28f
 CG_Argv = 0x2ac
 IsItemEntityAvailableToClient = 0x4e14
+DF_LoadBestCheckpoints = 0x506c
+DF_LoadSessionCheckpoints = 0x5092
 DF_UpdateTimerAndCheckpoints = 0x5248
 UpdateTimer = 0x5fd7
 CG_DrawStrlen = 0x1d514
@@ -135,6 +137,7 @@ CG_InitConsoleCommands = 0x1adc7
 CG_DrawActive = 0x1ce20
 CG_Item = 0x1ea0c
 CG_AddCEntity = 0x1f222
+CG_ConfigStringModified = 0x283fc
 
 [data]
 bg_itemlist = 0x3748
