@@ -2,7 +2,7 @@
 
 static void RestoreState(gentity_t* ent, saveState_t* state)
 {
-    int i;
+    int i, clientNum;
     playerState_t* ps = &ent->client->ps;
     vec3_t origin, viewangles, velocity;
 
@@ -32,8 +32,27 @@ static void RestoreState(gentity_t* ent, saveState_t* state)
     memcpy(ps->ammo, state->ammo, sizeof(ps->ammo));
     ps->weapon = state->weapon;
     ps->weaponstate = state->weaponstate;
-    timers[ent - g_entities].time = state->timer_time;
-    timers[ent - g_entities].timer_running = state->timer_running;
+    clientNum = ent - g_entities;
+    timers[clientNum].time = state->timer_time;
+    timers[clientNum].timer_running = state->timer_running;
+    timers[clientNum].num_checkpoints = state->num_checkpoints_hit;
+    // This is being fully cleared so that hitting any checkpoints after
+    // the state when restoring again works as expected. However, it also means
+    // that you can hit any checkpoint that was already hit in the time up to
+    // the state again... It is possible to restore this better, such that
+    // checkpoints up to the state are not triggerable again and checkpoints
+    // after the state still are. As we load the BSP again in cgame, we can
+    // track the bitmap client-side and send it over.. It's too much
+    // effort/hassle to care right now though.
+    timers[clientNum].checkpoint_bitmap = 0;
+
+    // This restores the waits on all triggers not just ones attached to
+    // checkpoints... While this may cause unintended side-effects on some maps,
+    // it's almost always the case that someone wouldn't want to wait for a
+    // trigger to come back when they restore. If it's really necessary, we can
+    // add an extra field/arg in the future to control whether the triggers
+    // should be reset or not.
+    DF_ResetClientWaits(clientNum);
 
     DF_PlacePlayerTeleport(ent, origin, viewangles, velocity);
 }

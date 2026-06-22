@@ -82,6 +82,8 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     // before draw active where cg.weaponSelect is ucmd set, but just in case.
     trap_SetUserCmdValue(cg.weaponSelect, cg.zoomSensitivity);
 
+    num_checkpoints_hit = state.num_checkpoints_hit;
+
     // let it go through so the server can do the actual restoring
     return CON_CMD_NOT_HANDLED;
 }
@@ -128,6 +130,7 @@ qboolean SaveCurrentState(saveState_t* out)
     out->serverTime = cg.snap->serverTime;
     out->timer_time = GetTimerTime(cg.snap);
     out->timer_running = !!(ps->stats[STAT_MISC] & MISC_TIMER_RUNNING);
+    out->num_checkpoints_hit = num_checkpoints_hit;
 
     return qtrue;
 }
