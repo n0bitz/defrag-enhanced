@@ -41,7 +41,7 @@ static void RestoreState(gentity_t* ent, saveState_t* state)
     // that you can hit any checkpoint that was already hit in the time up to
     // the state again... It is possible to restore this better, such that
     // checkpoints up to the state are not triggerable again and checkpoints
-    // after the state still are. As, we load the BSP again in cgame, so we can
+    // after the state still are. As we load the BSP again in cgame, we can
     // track the bitmap client-side and send it over.. It's too much
     // effort/hassle to care right now though.
     timers[clientNum].checkpoint_bitmap = 0;
