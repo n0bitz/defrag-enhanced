@@ -63,6 +63,7 @@ void CG_LoadBSP(void);
 //
 // cg_consolecmds.c
 //
+
 // This type alias is simply here for readability/convenience so we don't have
 // to remember what true/false is or go look it up each time.
 // NOTE: It is not its own enum type as we use it as CG_ConsoleCommand's
@@ -104,6 +105,7 @@ void CG_DrawPOIs(void);
 //
 // cg_savestate.c
 //
+
 // Returns false if current state is not supported.
 qboolean SaveCurrentState(saveState_t* out);
 
@@ -118,6 +120,9 @@ extern int num_checkpoints_hit;
 extern int timer_time;
 
 qboolean IsItemEntityAvailableToClient(entityState_t* state, int clientNum);
+
+void DF_LoadBestCheckpoints(void);
+void DF_LoadSessionCheckpoints(void);
 
 // Updates some global timer thingy if it changed between snap and prev and
 // returns the timer
