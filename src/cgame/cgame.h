@@ -116,6 +116,7 @@ extern vmCvar_t cg_drawBBox;
 extern vmCvar_t df_cl_alwaysDrawItems;
 extern int is_multiplayer;
 extern int sv_cheats;
+extern checkpointStatus_t checkpoint_status;
 extern int num_checkpoints_hit;
 extern int timer_time;
 

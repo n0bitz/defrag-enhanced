@@ -83,6 +83,11 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     trap_SetUserCmdValue(cg.weaponSelect, cg.zoomSensitivity);
 
     num_checkpoints_hit = state.num_checkpoints_hit;
+    // This needs to be set accordingly to handle the edge case of restoring to
+    // a state where the timer had started from one where we haven't started it
+    // yet. As otherwise, the checkpoint print function will fallback to not
+    // delta-ing even if df_checkpoints cvar was set to do so.
+    checkpoint_status.timer_started = state.timer_running || state.timer_time;
 
     // let it go through so the server can do the actual restoring
     return CON_CMD_NOT_HANDLED;
