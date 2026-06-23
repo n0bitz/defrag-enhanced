@@ -59,8 +59,8 @@ static void CG_InitEntityViewer(void)
     CG_LoadBSP();
 
     // bump name up if it's too close to another one to be readable
-    for (i = 0; i < num_entities; i++) {
-        VectorCopy(entities[i].origin, text_origins[i]);
+    for (i = 0; i < vec_len(bsp.entities); i++) {
+        VectorCopy(bsp.entities[i].origin, text_origins[i]);
         for (j = 0; j < i; j++) {
             if (Distance(text_origins[i], text_origins[j]) < 8.0f) {
                 text_origins[i][2] += 8.0f;
@@ -68,20 +68,20 @@ static void CG_InitEntityViewer(void)
         }
     }
 
-    for (i = 0; i < num_entities; i++) {
+    for (i = 0; i < vec_len(bsp.entities); i++) {
         if (
-           !Q_stricmp(entities[i].classname, "info_player_deathmatch") ||
-           !Q_stricmp(entities[i].classname, "info_player_start")
+           !Q_stricmp(bsp.entities[i].classname, "info_player_deathmatch") ||
+           !Q_stricmp(bsp.entities[i].classname, "info_player_start")
         ) {
             spawn_point_teams[num_spawn_points] = TEAM_FREE;
         } else if (
-           !Q_stricmp(entities[i].classname, "team_CTF_redplayer") ||
-           !Q_stricmp(entities[i].classname, "team_CTF_redspawn")
+           !Q_stricmp(bsp.entities[i].classname, "team_CTF_redplayer") ||
+           !Q_stricmp(bsp.entities[i].classname, "team_CTF_redspawn")
         ) {
             spawn_point_teams[num_spawn_points] = TEAM_RED;
         } else if (
-           !Q_stricmp(entities[i].classname, "team_CTF_bluespawn") ||
-           !Q_stricmp(entities[i].classname, "team_CTF_blueplayer")
+           !Q_stricmp(bsp.entities[i].classname, "team_CTF_bluespawn") ||
+           !Q_stricmp(bsp.entities[i].classname, "team_CTF_blueplayer")
         ) {
             spawn_point_teams[num_spawn_points] = TEAM_BLUE;
         } else {
@@ -104,8 +104,8 @@ void CG_AddEntityPOIs(void)
 
     CG_InitEntityViewer();
 
-    for (i = 0; i < num_entities; i++) {
-        CG_AddTextPOI(text_origins[i], entities[i].classname,
+    for (i = 0; i < vec_len(bsp.entities); i++) {
+        CG_AddTextPOI(text_origins[i], bsp.entities[i].classname,
                       cg_entitiesMaxDistance.value);
     }
 }
@@ -120,7 +120,9 @@ void CG_DrawEntityConnections(void)
 
     CG_InitEntityViewer();
 
-    for (src = entities; src != entities + num_entities; src++) {
+    for (
+       src = bsp.entities; src != bsp.entities + vec_len(bsp.entities); src++
+    ) {
         if (!src->targets) continue;
         for (dst = src->targets; *dst; dst++) {
             DrawConnection(src->origin, (*dst)->origin);
@@ -231,7 +233,7 @@ void CG_DrawSpawnPoints(void)
         float alpha;
         int j;
 
-        ent = entities + spawn_points[i];
+        ent = bsp.entities + spawn_points[i];
 
         switch (spawn_point_teams[i]) {
             case TEAM_RED:

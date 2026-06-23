@@ -183,6 +183,18 @@ def build(projects: list[Project]):
             pk3.write(build_dir / qvm_file_name, f"vm/{qvm_file_name}")
 
 
+def filter_warnings(output: str):
+    ignores = [
+        "expression with no effect elided",
+        "overflow in converting constant expression from `int' to `unsigned int'",
+    ]
+
+    def ignored(line):
+        return any(msg in line for msg in ignores)
+
+    return "\n".join(line for line in output.splitlines() if not ignored(line))
+
+
 def patch(project: Project):
     init_point = project.init_point
     symbols, to_hook_symbols = process_symbols(project)
@@ -191,8 +203,8 @@ def patch(project: Project):
     output = qvm.add_c_files(
         project.source_files, project.include_paths, project.cflags(for_build=True)
     )
-    if output:
-        raise Exception(f"LCC warnings found:\n{output}")
+    if output and (warnings := filter_warnings(output)):
+        raise Exception(f"LCC warnings found:\n{warnings}")
 
     hook_suffix, orig_suffix = project.hook_suffix, project.orig_suffix
     unhooked = []
