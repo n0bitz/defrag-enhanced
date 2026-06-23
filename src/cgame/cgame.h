@@ -2,6 +2,7 @@
 #define CGAME_HEADER_GUARD__
 
 #include "assert.h"
+#include "collections.h"
 #include "cvar.h"
 #include "extensions.h"
 #include "fs.h"
@@ -9,6 +10,7 @@
 #include "log.h"
 #include "cg_local.h"
 #include "bg_savestate.h"
+#include "qfiles.h"
 
 // TODO: maybe consider moving this out to a separate header if it gets too big
 #define FOR_EACH_CVAR(V)                                                       \
@@ -55,8 +57,12 @@ struct entity_s {
     vec3_t angles;
 };
 
-extern entity_t entities[MAX_GENTITIES];
-extern int num_entities;
+typedef struct {
+    vec(dmodel_t) models;
+    vec(entity_t) entities;
+} bsp_t;
+
+extern bsp_t bsp;
 
 void CG_LoadBSP(void);
 
