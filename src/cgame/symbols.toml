@@ -126,12 +126,16 @@ ceil = -109
 testPrintInt = -110
 testPrintFloat = -111
 acos = -112
+TraceDown = 0x84e6
+TraceCrosshair = 0x8444
+NeedOBInfo = 0xb1e5
 
 [hooks]
 CG_RegisterCvars = 0xfb
 CG_UpdateCvars = 0x19e
 CG_Init = 0xdc1
 CG_Draw2D_df = 0x2a12
+UpdateOB = 0xb21d
 CG_ConsoleCommand = 0x1ad89
 CG_InitConsoleCommands = 0x1adc7
 CG_DrawActive = 0x1ce20
@@ -148,3 +152,7 @@ df_cl_alwaysDrawItems = 0x11b214
 is_multiplayer = 0x11d2ac
 sv_cheats = 0x11d40c
 timer_time = 0x11d77c
+obInfo = 0x129b88
+df_ob_AllSlopes = 0x121278
+obSticky = 0x16e0
+obWeapon = 0x16e4

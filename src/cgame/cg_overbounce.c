@@ -2,6 +2,79 @@
 
 #define MAX_MAP_BOUNDS 65535
 
+qboolean NeedOBInfo(obType_t obType);
+void TraceDown(trace_t* trace, vec3_t origin);
+void TraceCrosshair(trace_t* trace, vec3_t origin, vec3_t viewangles);
+
+typedef struct {
+    int status[OB_MAX];
+    float lastOffsets[OB_MAX];
+    float offsets[OB_MAX];
+} obInfo_t;
+
+extern obInfo_t obInfo;
+extern vmCvar_t df_ob_AllSlopes;
+extern int obSticky, obWeapon;
+
+DEFINE_HOOK(void, UpdateOB, (vec3_t origin, vec3_t velocity, vec3_t viewangles))
+    obType_t obType;
+    qboolean traced = qfalse;
+    float normalZ;
+    trace_t downTrace, crosshairTrace;
+
+    if (!cg.snap) {
+        return;
+    }
+
+    if (
+       !cg_overbounceIgnoreKillOBs.integer &&
+       !atoi(Info_ValueForKey(CG_ConfigString(CS_SYSTEMINFO), "defrag_obs"))
+    ) {
+        return;
+    }
+
+    for (obType = 0; obType < OB_MAX; obType++) {
+        obInfo.status[obType] = -1;
+        obInfo.offsets[obType] = 0;
+        obInfo.lastOffsets[obType] = 0;
+
+        if (!NeedOBInfo(obType)) {
+            continue;
+        }
+
+        if (!traced) {
+            TraceDown(&downTrace, origin);
+            TraceCrosshair(&crosshairTrace, origin, viewangles);
+
+            if (!cg_overbounceIgnoreNoOB.integer) {
+                if (downTrace.surfaceFlags & SURF_NOOB) {
+                    downTrace.plane.normal[2] = -1;
+                }
+                if (crosshairTrace.surfaceFlags & SURF_NOOB) {
+                    crosshairTrace.plane.normal[2] = -1;
+                }
+            }
+
+            traced = qtrue;
+        }
+
+        normalZ = obType == OB_BELOW ? downTrace.plane.normal[2]
+                                     : crosshairTrace.plane.normal[2];
+
+        if (normalZ > 0 && (normalZ == 1 || df_ob_AllSlopes.integer)) {
+            obInfo.status[obType] =
+               CheckOB(obType, origin[2], velocity[2], downTrace.endpos[2],
+                       crosshairTrace.endpos[2], &obInfo.offsets[obType],
+                       &obInfo.lastOffsets[obType]);
+        }
+    }
+
+    obWeapon = (obWeapon + 1) % 4;
+    obSticky = (obSticky + 1) % 3;
+
+    (void)ORIGINAL(UpdateOB);
+END_HOOK
+
 static vec3_t* ClipPoly(vec3_t* poly, dplane_t* plane)
 {
     vec3_t* out = NULL;
@@ -37,6 +110,7 @@ static vec3_t* ClipPoly(vec3_t* poly, dplane_t* plane)
 
 typedef struct floorSurface_s {
     vec3_t* vertices;
+    qboolean noOB;
 } floorSurface_t;
 
 typedef struct {
@@ -47,14 +121,18 @@ typedef struct {
 } floor_t;
 
 static hashmap(float, floor_t) floors;
+static qboolean builtFloors;
 
 static size_t* activeFloors;
 
 static void BuildFloors(void)
 {
     int i, j, k;
+    int firstBrush = bsp.models[0].firstBrush;
+    int numBrushes = bsp.models[0].numBrushes;
+    vec3_t* poly;
 
-    for (i = 0; i < vec_len(bsp.brushes); i++) {
+    for (i = firstBrush; i < firstBrush + numBrushes; i++) {
         dbrush_t* brush = &bsp.brushes[i];
         floor_t floor;
         floorSurface_t* surface;
@@ -65,45 +143,44 @@ static void BuildFloors(void)
 
             if (
                plane->normal[2] != 1.0 ||
-               !(bsp.shaders[brush->shaderNum].contentFlags &
-                 MASK_PLAYERSOLID) ||
-               bsp.shaders[side->shaderNum].surfaceFlags & SURF_NOOB
+               !(bsp.shaders[brush->shaderNum].contentFlags & MASK_PLAYERSOLID)
             ) {
                 continue;
             }
 
-            floor = hashmap_get(floors, plane->dist);
-            floor.z = plane->dist;
+            poly = NULL;
+            vec_resize(poly, 4);
+            VectorSet(poly[0], -MAX_MAP_BOUNDS, -MAX_MAP_BOUNDS, plane->dist);
+            VectorSet(poly[1], -MAX_MAP_BOUNDS, MAX_MAP_BOUNDS, plane->dist);
+            VectorSet(poly[2], MAX_MAP_BOUNDS, MAX_MAP_BOUNDS, plane->dist);
+            VectorSet(poly[3], MAX_MAP_BOUNDS, -MAX_MAP_BOUNDS, plane->dist);
 
-            surface = vec_reserve(floor.surfaces, 1);
-            memset(surface, 0, sizeof(*surface));
+            for (k = 0; k < brush->numSides; k++) {
+                vec3_t* clippedPoly;
 
-            {
-                vec3_t* poly = NULL;
-                vec_resize(poly, 4);
-                VectorSet(poly[0], -MAX_MAP_BOUNDS, -MAX_MAP_BOUNDS, floor.z);
-                VectorSet(poly[1], -MAX_MAP_BOUNDS, MAX_MAP_BOUNDS, floor.z);
-                VectorSet(poly[2], MAX_MAP_BOUNDS, MAX_MAP_BOUNDS, floor.z);
-                VectorSet(poly[3], MAX_MAP_BOUNDS, -MAX_MAP_BOUNDS, floor.z);
-
-                for (k = 0; k < brush->numSides; k++) {
-                    vec3_t* clippedPoly;
-
-                    if (k == j) {
-                        continue;
-                    }
-
-                    clippedPoly = ClipPoly(
-                       poly, &bsp.planes[bsp.brushSides[brush->firstSide + k]
-                                            .planeNum]);
-                    vec_free(poly);
-                    poly = clippedPoly;
+                if (k == j) {
+                    continue;
                 }
 
-                surface->vertices = poly;
+                clippedPoly = ClipPoly(
+                   poly,
+                   &bsp.planes[bsp.brushSides[brush->firstSide + k].planeNum]);
+                vec_free(poly);
+                poly = clippedPoly;
             }
 
-            hashmap_insert(floors, floor.z, floor);
+            if (vec_len(poly) >= 3) {
+                floor = hashmap_get(floors, plane->dist);
+                floor.z = plane->dist;
+
+                surface = vec_reserve(floor.surfaces, 1);
+                memset(surface, 0, sizeof(*surface));
+                surface->vertices = poly;
+                surface->noOB =
+                   bsp.shaders[side->shaderNum].surfaceFlags & SURF_NOOB;
+
+                hashmap_insert(floors, floor.z, floor);
+            }
         }
     }
 }
@@ -119,19 +196,19 @@ void CG_DrawOBs(void)
         return;
     }
 
-    if (!atoi(Info_ValueForKey(CG_ConfigString(CS_SYSTEMINFO), "defrag_obs"))) {
+    if (
+       !cg_overbounceIgnoreKillOBs.integer &&
+       !atoi(Info_ValueForKey(CG_ConfigString(CS_SYSTEMINFO), "defrag_obs"))
+    ) {
         return;
     }
 
-    if (!hashmap_len(floors)) {
+    if (!builtFloors) {
         CG_LoadBSP();
         BuildFloors();
         Com_Printf("^3built %d floors\n", hashmap_len(floors));
+        builtFloors = qtrue;
     }
-
-    // TODO
-    // [ ] respect killobs/noob (optionally? also option to show even if killobs
-    //     are on but w/ a different shader?)
 
     oz = cg.snap->ps.origin[2];
     vz = cg.snap->ps.velocity[2];
@@ -205,6 +282,10 @@ void CG_DrawOBs(void)
             polyVert_t verts[64];
 
             if (vec_len(surface->vertices) > 64) {
+                continue;
+            }
+
+            if (surface->noOB && !cg_overbounceIgnoreNoOB.integer) {
                 continue;
             }
 

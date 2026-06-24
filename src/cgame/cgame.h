@@ -41,6 +41,12 @@
     V(cg_overbounceDraw, "0", CVAR_ARCHIVE,                                    \
       "Highlight surfaces on which an overbounce is possible.")                \
                                                                                \
+    V(cg_overbounceIgnoreKillOBs, "0", CVAR_ARCHIVE,                           \
+      "Show overbounces even when df_ob_KillOBs is enabled.")                  \
+                                                                               \
+    V(cg_overbounceIgnoreNoOB, "0", CVAR_ARCHIVE,                              \
+      "Show overbounces on no-OB surfaces.")                                   \
+                                                                               \
     V(cg_overbounceMaxTestsPerFrame, "50", CVAR_ARCHIVE,                       \
       "The maximum number of checks for overbounces allowed per frame.")
 
@@ -149,7 +155,7 @@ qboolean IsItemEntityAvailableToClient(entityState_t* state, int clientNum);
 // returns the timer
 int UpdateTimer(snapshot_t* snap, snapshot_t* prev);
 
-typedef enum { OB_GO = 1, OB_JUMP = 2 } obType_t;
+typedef enum { OB_BELOW = 0, OB_GO = 1, OB_JUMP = 2, OB_MAX = 17 } obType_t;
 
 int CheckOB(obType_t obType, float originZ, float velocityZ, float downFloorZ,
             float viewFloorZ, float* outDist1, float* outDist2);
