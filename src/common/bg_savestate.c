@@ -20,7 +20,8 @@ qboolean DeserializeSaveState(const char* str, saveState_t* out)
 
     // These checks are to make sure things to don't go OOB and such, not so
     // much as to prevent/disallow bogus/broken states.
-    return (out->holdable >= HI_NONE && out->holdable < HI_NUM_HOLDABLE) &&
+    return (out->holdable >= 0 && out->holdable < bg_numItems &&
+            bg_itemlist[out->holdable].giType == IT_HOLDABLE) &&
            (out->weapon >= WP_NONE && out->weapon < WP_NUM_WEAPONS) &&
            (out->weaponstate >= WEAPON_READY &&
             out->weaponstate <= WEAPON_FIRING) &&

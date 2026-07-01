@@ -141,6 +141,7 @@ CG_ConfigStringModified = 0x283fc
 
 [data]
 bg_itemlist = 0x3748
+bg_numItems = 0x3ecc
 cg_drawBBox = 0x11868
 cg_simpleItems = 0x14728
 cg = 0xcfcc8

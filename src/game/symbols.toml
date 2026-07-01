@@ -209,6 +209,8 @@ G_InitGame = 0x2bb
 ClientCommand = 0x1f4ba
 
 [data]
+bg_itemlist = 0xb38
+bg_numItems = 0x12bc
 g_entities = 0x1b2f0
 level = 0x12a2f0
 timers = 0x1318dc
