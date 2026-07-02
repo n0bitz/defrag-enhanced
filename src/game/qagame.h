@@ -26,5 +26,7 @@ extern df_t df;
 void DF_ResetClientWaits(int clientNum);
 void DF_PlacePlayerTeleport(gentity_t* ent, vec3_t origin, vec3_t angles,
                             vec3_t velocity);
+gentity_t* SelectRandomFurthestSpawnPoint(vec3_t avoidPoint, vec3_t origin,
+                                          vec3_t angles, int arena);
 
 #endif  // QAGAME_HEADER_GUARD__

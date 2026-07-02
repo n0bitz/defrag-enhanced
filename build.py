@@ -46,7 +46,6 @@ def main():
                 "src/libc",
                 "src/third_party",
             ],
-            instruction_patch_files=["src/game/instruction_patches.py"],
         ),
     ]
 

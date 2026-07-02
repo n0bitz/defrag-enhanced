@@ -1,7 +1,7 @@
 #include "qagame.h"
 
 DEFINE_HOOK(qboolean, DF_ItemPickupAllowed, (gentity_t* ent))
-    (void)ORIGINAL(DF_ItemPickupAllowed);
+    (void)ORIGINAL(DF_ItemPickupAllowed);  // intentional reimplementation
 
     if (!ent->item) {
         return qfalse;
@@ -10,13 +10,14 @@ DEFINE_HOOK(qboolean, DF_ItemPickupAllowed, (gentity_t* ent))
         return qtrue;
     }
 
-    // DeFRaG explicitly prevents personal teleporters from being picked up.
-    // Presumably because in fastcaps, using the personal teleporter while the
-    // flag is held, results in the flag dropping. Which in turn, would allow
-    // for unintended time resets off the dropped flag which may be closer to
-    // the player's own base. However, we want the personal teleporter to be
-    // usable once again, so we are going to let it be picked up. The issue with
-    // flags is taken care of in `ClientEvents`, see that for more info.
+    // DFE change: DeFRaG explicitly prevents personal teleporters from being
+    // picked up. Presumably because in fastcaps, using the personal teleporter
+    // while the flag is held, results in the flag dropping. Which in turn,
+    // would allow for unintended time resets off the dropped flag which may be
+    // closer to the player's own base. However, we want the personal teleporter
+    // to be usable once again, so we are going to let it be picked up. The
+    // issue with flags is taken care of in `ClientEvents`, see that for more
+    // info.
     /*
     if (ent->item->giType == IT_HOLDABLE && ent->item->giTag == HI_TELEPORTER) {
         return qfalse;
