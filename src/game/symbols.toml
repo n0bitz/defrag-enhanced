@@ -1,7 +1,6 @@
 [code]
 Com_Printf = 0x45a
 DF_ResetClientWaits = 0x2830
-DF_ItemPickupAllowed = 0x3c8b
 DF_PlacePlayerTeleport = 0x45f0
 strlen = 0x5bfc
 strcmp = 0x5c8f
@@ -209,6 +208,7 @@ trap_BotLibSourceFileAndLine = -582
 
 [hooks]
 G_InitGame = 0x2bb
+DF_ItemPickupAllowed = 0x3c8b
 ClientCommand = 0x1f4ba
 
 [data]
@@ -216,4 +216,5 @@ bg_itemlist = 0xb38
 bg_numItems = 0x12bc
 g_entities = 0x1b2f0
 level = 0x12a2f0
+df = 0x1317bc
 timers = 0x1318dc

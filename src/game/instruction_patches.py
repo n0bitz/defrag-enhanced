@@ -9,58 +9,6 @@ if TYPE_CHECKING:
 
 
 @patch_func
-def DF_ItemPickupAllowed(qvm: Qvm):
-    func = "DF_ItemPickupAllowed"
-    func_addr = qvm.symbols[func]
-
-    # To let personal teleporters be picked up, the following is done:
-    # ```diff
-    #     if (ent->flags & FL_EXPLICIT_GIVE_CMD) {
-    #         return qtrue;
-    #     }
-    # -    if (ent->item->giType == IT_HOLDABLE && ent->item->giTag == HI_TELEPORTER) {
-    # -        return qfalse;
-    # -    }
-    #     return df.itemPickupAllowedBitmap & (1 << ent->item->giType);
-    # }
-    # ```
-    # Fastcaps breaking when you use the personal teleporter is handled with a
-    # `ClientEvents` instruction patch. See that for more information on why DF
-    # may have prevented it from being picked up.
-    qvm.replace_instructions(
-        func_addr + 0x19,
-        [
-            I(O.LOCAL, 0x8),
-            I(O.LOCAL, 0x14),
-            I(O.LOAD4),
-            I(O.CONST, 0x324),
-            I(O.ADD),
-            I(O.LOAD4),
-            I(O.STORE4),
-            I(O.LOCAL, 0x8),
-            I(O.LOAD4),
-            I(O.CONST, 0x24),
-            I(O.ADD),
-            I(O.LOAD4),
-            I(O.CONST, 0x6),
-            I(O.NE, func_addr + 0x32),
-            I(O.LOCAL, 0x8),
-            I(O.LOAD4),
-            I(O.CONST, 0x28),
-            I(O.ADD),
-            I(O.LOAD4),
-            I(O.CONST, 0x1),
-            I(O.NE, func_addr + 0x32),
-            I(O.CONST, 0x0),
-            I(O.LEAVE, 0xC),
-            I(O.CONST, func_addr + 0x40),
-            I(O.JUMP),
-        ],
-        [I(O.UNDEF)] * 25,
-    )
-
-
-@patch_func
 def ClientEvents(qvm: Qvm):
     func = "ClientEvents"
     func_addr = qvm.symbols[func]
