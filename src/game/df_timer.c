@@ -24,9 +24,9 @@ DEFINE_HOOK(qboolean, DF_ItemPickupAllowed, (gentity_t* ent))
     }
     */
 
-    // The != 0 is just a nitpick thing I'm adding... We typed the return as
-    // qboolean in ReFRaG, but DeFRaG never actually brought the bit test result
-    // back to [qfalse, qtrue] (it doesn't matter cause all the existing usages
-    // just test with !DF_ItemPickupAllowed(...))
+    // DFE change: The != 0 is just a nitpick thing I'm adding... We typed the
+    // return as qboolean in ReFRaG, but DeFRaG never actually brought the bit
+    // test result back to [qfalse, qtrue] (it doesn't matter cause all the
+    // existing usages just test with !DF_ItemPickupAllowed(...))
     return (df.itemPickupAllowedBitmap & (1 << ent->item->giType)) != 0;
 END_HOOK
