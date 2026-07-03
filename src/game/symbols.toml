@@ -2,6 +2,7 @@
 Com_Printf = 0x45a
 DF_ResetClientWaits = 0x2830
 DF_PlacePlayerTeleport = 0x45f0
+BG_FindItemForPowerup = 0x4aed
 strlen = 0x5bfc
 strcmp = 0x5c8f
 memmove = 0x5d5d
@@ -9,6 +10,10 @@ atoi = 0x5f67
 sscanf = 0x64f2
 Q_strncpyz = 0xa99f
 Q_stricmp = 0xaab7
+SelectRandomFurthestSpawnPoint = 0x1c6be
+G_Damage = 0x2015b
+TeleportPlayer = 0x21864
+FireWeapon = 0x29497
 trap_Printf = -1
 trap_Error = -2
 trap_Milliseconds = -3
@@ -206,6 +211,8 @@ trap_BotLibSourceFileAndLine = -582
 
 [hooks]
 G_InitGame = 0x2bb
+DF_ItemPickupAllowed = 0x3c8b
+ClientEvents = 0x1a63a
 ClientCommand = 0x1f4ba
 
 [data]
@@ -213,4 +220,5 @@ bg_itemlist = 0xb38
 bg_numItems = 0x12bc
 g_entities = 0x1b2f0
 level = 0x12a2f0
+df = 0x1317bc
 timers = 0x1318dc
