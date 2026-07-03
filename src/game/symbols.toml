@@ -12,7 +12,6 @@ Q_strncpyz = 0xa99f
 Q_stricmp = 0xaab7
 SelectRandomFurthestSpawnPoint = 0x1c6be
 G_Damage = 0x2015b
-Drop_Item = 0x211e6
 TeleportPlayer = 0x21864
 FireWeapon = 0x29497
 trap_Printf = -1
