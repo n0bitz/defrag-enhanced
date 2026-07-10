@@ -16,7 +16,7 @@ float MoveToward(float from, float to, float maxDelta)
 
 vec(vec3_t) ClipPoly(vec(vec3_t) poly, dplane_t* plane)
 {
-    vec3_t* out = NULL;
+    vec(vec3_t) out = NULL;
     vec3_t a, b;
     float a_dist, b_dist;
     int i;

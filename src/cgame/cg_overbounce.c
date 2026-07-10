@@ -4,7 +4,7 @@
 #define MAX_POLY_VERTS 64
 
 typedef struct floorSurface_s {
-    vec3_t* vertices;
+    vec(vec3_t) vertices;
     qboolean noOB;
 } floorSurface_t;
 
@@ -12,11 +12,11 @@ typedef struct {
     float z;
     qboolean g, j;
     float smooth_g, smooth_j;
-    floorSurface_t* surfaces;
+    vec(floorSurface_t) surfaces;
 } floor_t;
 
 static hashmap(float, floor_t) floors;
-static size_t* activeFloors;
+static vec(size_t) activeFloors;
 
 // This is a reimplementation of DF's function but with killOBs/NOOB checks.
 DEFINE_HOOK(void, UpdateOB, (vec3_t origin, vec3_t velocity, vec3_t viewangles))
@@ -26,10 +26,13 @@ DEFINE_HOOK(void, UpdateOB, (vec3_t origin, vec3_t velocity, vec3_t viewangles))
     trace_t downTrace, crosshairTrace;
     qboolean killOBs;
 
+    (void)ORIGINAL(UpdateOB);
+
     if (!cg.snap) {
         return;
     }
 
+    // DFE change: respect df_ob_KillOBs
     killOBs = !cg_overbounceIgnoreKillOBs.integer && !defragInfo.obs;
 
     for (obType = 0; obType < OB_MAX; obType++) {
@@ -37,6 +40,7 @@ DEFINE_HOOK(void, UpdateOB, (vec3_t origin, vec3_t velocity, vec3_t viewangles))
         obOffset[obType] = 0;
         obLastOffset[obType] = 0;
 
+        // DFE change: respect df_ob_KillOBs
         if (killOBs || !NeedOBInfo(obType)) {
             continue;
         }
@@ -45,6 +49,7 @@ DEFINE_HOOK(void, UpdateOB, (vec3_t origin, vec3_t velocity, vec3_t viewangles))
             TraceDown(&downTrace, origin);
             TraceCrosshair(&crosshairTrace, origin, viewangles);
 
+            // DFE change: respect SURF_NOOB
             if (!cg_overbounceIgnoreNoOB.integer) {
                 if (downTrace.surfaceFlags & SURF_NOOB) {
                     downTrace.plane.normal[2] = -1;
@@ -70,8 +75,6 @@ DEFINE_HOOK(void, UpdateOB, (vec3_t origin, vec3_t velocity, vec3_t viewangles))
 
     obCurrentWeapon = (obCurrentWeapon + 1) % 4;
     obCurrentStickyType = (obCurrentStickyType + 1) % 3;
-
-    (void)ORIGINAL(UpdateOB);
 END_HOOK
 
 static vec(vec3_t) BuildPolyFromBrushSide(dbrush_t* brush, dbrushside_t* side)
@@ -88,7 +91,7 @@ static vec(vec3_t) BuildPolyFromBrushSide(dbrush_t* brush, dbrushside_t* side)
 
     for (i = 0; i < brush->numSides; i++) {
         dbrushside_t* clipSide = &bsp.brushSides[brush->firstSide + i];
-        vec3_t* clippedPoly;
+        vec(vec3_t) clippedPoly;
 
         if (clipSide == side) {
             continue;

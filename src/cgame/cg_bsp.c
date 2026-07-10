@@ -4,9 +4,9 @@ bsp_t bsp;
 
 #define LoadRawLump(f, lump, dest)                          \
     (vec_resize(dest, (lump)->filelen / sizeof((dest)[0])), \
-     LoadRawLump_(f, lump, (void**)&(dest), sizeof((dest)[0]), #dest))
+     LoadRawLump_(f, lump, (void*)(dest), sizeof((dest)[0]), #dest))
 
-static void LoadRawLump_(fileHandle_t f, lump_t* lump, void** dest,
+static void LoadRawLump_(fileHandle_t f, lump_t* lump, void* dest,
                          int structSize, const char* name)
 {
     if (lump->filelen < 0 || lump->filelen % structSize) {
@@ -15,7 +15,7 @@ static void LoadRawLump_(fileHandle_t f, lump_t* lump, void** dest,
     }
 
     trap_FS_Seek(f, lump->fileofs, FS_SEEK_SET);
-    trap_FS_Read(*dest, lump->filelen, f);
+    trap_FS_Read(dest, lump->filelen, f);
 }
 
 static int FindTargets(entity_t* src, entity_t** list, int max_count)
