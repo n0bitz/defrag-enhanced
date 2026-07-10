@@ -24,7 +24,9 @@ static void CG_DrawItemBBox(centity_t* cent)
         // What is df even doing? Why is multiplayer special?
         // Also hate how many options df_cl_alwaysDrawItems has...
         // Why is this so unnecessarily overcomplicated?
-        if (!is_multiplayer || !df_cl_alwaysDrawItems.integer) return;
+        if (!defragInfo.is_multiplayer || !df_cl_alwaysDrawItems.integer) {
+            return;
+        }
 
         is_flag = bg_itemlist[es->modelindex].giType == IT_TEAM;
         if (cg_simpleItems.integer && !is_flag) {

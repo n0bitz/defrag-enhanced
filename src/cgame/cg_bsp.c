@@ -2,6 +2,22 @@
 
 bsp_t bsp;
 
+#define LoadRawLump(f, lump, dest)                          \
+    (vec_resize(dest, (lump)->filelen / sizeof((dest)[0])), \
+     LoadRawLump_(f, lump, (void*)(dest), sizeof((dest)[0]), #dest))
+
+static void LoadRawLump_(fileHandle_t f, lump_t* lump, void* dest,
+                         int structSize, const char* name)
+{
+    if (lump->filelen < 0 || lump->filelen % structSize) {
+        Com_Printf(LOG_WARN "%s: bad lump size (%d)\n", name, lump->filelen);
+        return;
+    }
+
+    trap_FS_Seek(f, lump->fileofs, FS_SEEK_SET);
+    trap_FS_Read(dest, lump->filelen, f);
+}
+
 static int FindTargets(entity_t* src, entity_t** list, int max_count)
 {
     int num_targets = 0;
@@ -43,17 +59,6 @@ static void LinkTargets(void)
         FindTargets(src, src->targets, num_targets);
         src->targets[num_targets++] = NULL;
     }
-}
-
-static void LoadModels(fileHandle_t f, lump_t* lump)
-{
-    if (lump->filelen < 0 || lump->filelen % sizeof(dmodel_t)) {
-        Com_Printf(LOG_WARN "bad model lump size\n");
-        return;
-    }
-    vec_resize(bsp.models, lump->filelen / sizeof(dmodel_t));
-    trap_FS_Seek(f, lump->fileofs, FS_SEEK_SET);
-    trap_FS_Read(bsp.models, lump->filelen, f);
 }
 
 static void ParseEntity(char** p, entity_t* ent)
@@ -129,8 +134,13 @@ void CG_LoadBSP(void)
     trap_FS_FOpenFile(cgs.mapname, &f, FS_READ);
     trap_FS_Read(&header, sizeof(header), f);
 
-    LoadModels(f, &header.lumps[LUMP_MODELS]);
+    LoadRawLump(f, &header.lumps[LUMP_SHADERS], bsp.shaders);
+    LoadRawLump(f, &header.lumps[LUMP_MODELS], bsp.models);
+    LoadRawLump(f, &header.lumps[LUMP_PLANES], bsp.planes);
+    LoadRawLump(f, &header.lumps[LUMP_BRUSHSIDES], bsp.brushSides);
+    LoadRawLump(f, &header.lumps[LUMP_BRUSHES], bsp.brushes);
     LoadEntities(f, &header.lumps[LUMP_ENTITIES]);
+
     trap_FS_FCloseFile(f);
 
     loaded = qtrue;

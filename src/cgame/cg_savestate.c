@@ -54,7 +54,7 @@ consoleCommandStatus_t CG_RestoreState_f(void)
     // the server doesn't restore the rest. But, so what? What is important is
     // that we don't try to restore stuff client side when cheats are off, lest
     // it break normal gameplay somehow.
-    if (!sv_cheats) {
+    if (!defragInfo.sv_cheats) {
         trap_Print(LOG_ERROR "Cheats are not enabled on this server\n");
         return CON_CMD_HANDLED;
     }
