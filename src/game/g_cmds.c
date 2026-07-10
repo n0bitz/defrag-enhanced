@@ -44,7 +44,7 @@ DEFINE_HOOK(void, ClientCommand, (int clientNum))
     trap_Argv(0, cmd, sizeof(cmd));
     // END stuff that vanilla/DF also does
 
-    for (i = 0; i < sizeof(commandTable) / sizeof(commandTable[0]); i++) {
+    for (i = 0; i < ARRAY_LENGTH(commandTable); i++) {
         if (!Q_stricmp(cmd, commandTable[i].name)) {
             commandTable[i].function(ent);
             return;

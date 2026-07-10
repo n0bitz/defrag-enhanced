@@ -1,6 +1,7 @@
 #ifndef QAGAME_HEADER_GUARD__
 #define QAGAME_HEADER_GUARD__
 
+#include "utils.h"
 #include "assert.h"
 #include "fs.h"
 #include "hook.h"

@@ -1,6 +1,7 @@
 #ifndef CGAME_HEADER_GUARD__
 #define CGAME_HEADER_GUARD__
 
+#include "utils.h"
 #include "assert.h"
 #include "collections.h"
 #include "cvar.h"

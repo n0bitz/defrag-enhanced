@@ -11,7 +11,7 @@ static consoleCommand_t commandTable[] = {
 #undef COMMAND_TABLE_ENTRY_
 };
 
-static int commandTableSize = sizeof(commandTable) / sizeof(commandTable[0]);
+static int commandTableSize = ARRAY_LENGTH(commandTable);
 
 DEFINE_HOOK(consoleCommandStatus_t, CG_ConsoleCommand, (void))
     int i;
