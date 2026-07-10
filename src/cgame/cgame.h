@@ -145,7 +145,7 @@ void CG_DrawPOIs(void);
 //
 
 // Returns false if current state is not supported.
-qboolean SaveCurrentState(saveState_t* out);
+qboolean CaptureCurrentState(saveState_t* out);
 
 //
 // df_stuff.c (og df stuff that you don't know/care where to place)

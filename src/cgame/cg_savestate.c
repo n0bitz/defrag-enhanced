@@ -17,7 +17,7 @@ consoleCommandStatus_t CG_SaveState_f(void)
         return CON_CMD_HANDLED;
     }
 
-    if (!SaveCurrentState(&state)) {
+    if (!CaptureCurrentState(&state)) {
         trap_Print(LOG_ERROR "Saving current state is not supported\n");
         return CON_CMD_HANDLED;
     }
@@ -107,7 +107,7 @@ static int GetTimerTime(snapshot_t* snap)
     return time;
 }
 
-qboolean SaveCurrentState(saveState_t* out)
+qboolean CaptureCurrentState(saveState_t* out)
 {
     playerState_t* ps = &cg.snap->ps;
 
