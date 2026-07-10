@@ -107,9 +107,14 @@ typedef qboolean consoleCommandStatus_t;
 #define CON_CMD_NOT_HANDLED qfalse
 #define CON_CMD_HANDLED qtrue
 
-#define FOR_EACH_CONSOLE_COMMAND(V)         \
-    V("savestate", CG_SaveState_f)          \
-    V(RESTORE_STATE_CMD, CG_RestoreState_f) \
+#define FOR_EACH_CONSOLE_COMMAND(V)            \
+    V("savestate", CG_SaveState_f)             \
+    V(RESTORE_STATE_CMD, CG_RestoreState_f)    \
+    V("recall", CG_Recall_f)                   \
+    V("+recall_forward", IN_RecallForwardDown) \
+    V("-recall_forward", IN_RecallForwardUp)   \
+    V("+recall_rewind", IN_RecallRewindDown)   \
+    V("-recall_rewind", IN_RecallRewindUp)     \
     V("cgMallocStats", CG_MallocStats_f)
 
 #define DECLARE_COMMAND_(name, func) consoleCommandStatus_t func(void);
@@ -139,6 +144,13 @@ void CG_DrawOBs(void);
 //
 void CG_AddTextPOI(const vec3_t origin, const char* text, float max_dist);
 void CG_DrawPOIs(void);
+
+//
+// cg_recall.c
+//
+void CG_AddRecallState(void);
+void CG_SaveRecallBuffer(void);
+void CG_DrawRecall(void);
 
 //
 // cg_savestate.c
