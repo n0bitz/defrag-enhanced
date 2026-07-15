@@ -1,24 +1,32 @@
 #include "cgame.h"
 
-#define RECALL_FILE_PATH "temp/current.vhs"
+#define RECALL_CAPACITY (60 * 1000 / 8)  // 1 min worth at 125fps
+#define RECALL_FILE_PATH "temp/current.cd_01"
 
 typedef struct {
-    int index;
+    int write_idx;  // index to append to
     int length;
-    saveState_t buffer[60 * 1000 / 8];
-} recallBuffer_t;
+    saveState_t states[RECALL_CAPACITY];
+} recallRingBuffer_t;
 
-static recallBuffer_t recall_states;
-// KTODO: make these cvars?
-static qboolean recalling, forwarding, rewinding;
-static int recall_frame_idx = 0;
+static recallRingBuffer_t history;
 
-static void recall_seek(int base_idx, int offset)
+static struct {
+    qboolean visible;
+    int cursor;
+    qboolean scrubbing_forward;
+    qboolean scrubbing_backward;
+} viewer;
+
+static void ScrubViewer(int offset)
 {
-    recall_frame_idx = (base_idx + offset) % recall_states.length;
-    if (recall_frame_idx < 0) {
-        recall_frame_idx += base_idx + recall_states.length;
+    int length = history.length;
+
+    if (length <= 0) {
+        return;
     }
+
+    viewer.cursor = (viewer.cursor + (offset % length) + length) % length;
 }
 
 // KTODO: call lazily
@@ -26,29 +34,38 @@ static void InitRecallBuffer(void)
 {
     fileHandle_t recall_file;
 
-    memset(&recall_states, 0, sizeof(recall_states));
+    memset(&history, 0, sizeof(history));
     trap_FS_FOpenFile(RECALL_FILE_PATH, &recall_file, FS_READ);
     if (recall_file) {
-        trap_FS_Read(&recall_states, sizeof(recall_states), recall_file);
+        trap_FS_Read(&history, sizeof(history), recall_file);
         trap_FS_FCloseFile(recall_file);
     }
 }
 
 void CG_AddRecallState(void)
 {
-    if (recalling) {
+    if (viewer.visible) {
         return;
     }
 
-    if (!CaptureCurrentState(&recall_states.buffer[recall_states.index])) {
+    if (!CaptureCurrentState(&history.states[history.write_idx])) {
         return;
     }
 
-    if (recall_states.length < ARRAY_LENGTH(recall_states.buffer)) {
-        recall_states.length += 1;
+    if (history.length < ARRAY_LENGTH(history.states)) {
+        history.length += 1;
     }
-    recall_states.index =
-       (recall_states.index + 1) % ARRAY_LENGTH(recall_states.buffer);
+    history.write_idx = (history.write_idx + 1) % ARRAY_LENGTH(history.states);
+}
+
+saveState_t* CG_GetRecallState(void)
+{
+    // KTODO: ring buffer length check probably not needed
+    if (!viewer.visible || history.length <= 0) {
+        return NULL;
+    }
+
+    return &history.states[viewer.cursor];
 }
 
 // KTODO: call
@@ -61,7 +78,8 @@ void CG_SaveRecallBuffer(void)
         Com_Printf(LOG_ERROR "couldn't write to recall file\n");
         return;
     }
-    trap_FS_Write(&recall_states, sizeof(recall_states), recall_file);
+    // KTODO: write can fail?
+    trap_FS_Write(&history, sizeof(history), recall_file);
     trap_FS_FCloseFile(recall_file);
 }
 
@@ -69,21 +87,20 @@ void CG_DrawRecall(void)
 {
     refdef_t refdef;
 
-    if (!recalling) {
+    if (!viewer.visible) {
         return;
     }
 
-    if (forwarding) {
-        recall_seek(recall_frame_idx, +1);
+    if (viewer.scrubbing_forward) {
+        ScrubViewer(+1);
     }
-    if (rewinding) {
-        recall_seek(recall_frame_idx, -1);
+    if (viewer.scrubbing_backward) {
+        ScrubViewer(-1);
     }
 
     memset(&refdef, 0, sizeof(refdef));
     AxisClear(refdef.viewaxis);
-    AnglesToAxis(recall_states.buffer[recall_frame_idx].viewangles,
-                 refdef.viewaxis);
+    AnglesToAxis(history.states[viewer.cursor].viewangles, refdef.viewaxis);
     // TODO: fix fov stuff since player can be in water or whatever when
     // recalling a position not in water or something
     refdef.fov_x = cg.refdef.fov_x;
@@ -94,38 +111,48 @@ void CG_DrawRecall(void)
     refdef.width = 300;
     refdef.height = 300;
     refdef.time = cg.time;
-    VectorCopy(recall_states.buffer[recall_frame_idx].origin, refdef.vieworg);
+    VectorCopy(history.states[viewer.cursor].origin, refdef.vieworg);
     trap_R_RenderScene(&refdef);
 }
 
 consoleCommandStatus_t CG_Recall_f(void)
 {
-    recalling = !recalling;
-    recall_seek(recall_states.index, -1);
-    Com_Printf(LOG_INFO "Recall (%s)\n", (recalling) ? "ON" : "OFF");
+    if (!viewer.visible && history.length <= 0) {
+        Com_Printf(LOG_ERROR "Nothing to recall\n");
+        return CON_CMD_HANDLED;
+    }
+
+    viewer.visible = !viewer.visible;
+    if (viewer.visible) {
+        // KTODO: hack to go to most recent frame
+        viewer.cursor = 0;
+        ScrubViewer(-1);
+    }
+
+    Com_Printf(LOG_INFO "Recall (%s)\n", (viewer.visible) ? "ON" : "OFF");
     return CON_CMD_HANDLED;
 }
 
 consoleCommandStatus_t IN_RecallForwardDown(void)
 {
-    forwarding = qtrue;
+    viewer.scrubbing_forward = qtrue;
     return CON_CMD_HANDLED;
 }
 
 consoleCommandStatus_t IN_RecallForwardUp(void)
 {
-    forwarding = qfalse;
+    viewer.scrubbing_forward = qfalse;
     return CON_CMD_HANDLED;
 }
 
 consoleCommandStatus_t IN_RecallRewindDown(void)
 {
-    rewinding = qtrue;
+    viewer.scrubbing_backward = qtrue;
     return CON_CMD_HANDLED;
 }
 
 consoleCommandStatus_t IN_RecallRewindUp(void)
 {
-    rewinding = qfalse;
+    viewer.scrubbing_backward = qfalse;
     return CON_CMD_HANDLED;
 }

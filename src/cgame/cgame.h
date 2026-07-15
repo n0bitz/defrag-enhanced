@@ -148,6 +148,7 @@ void CG_DrawPOIs(void);
 //
 // cg_recall.c
 //
+saveState_t* CG_GetRecallState(void);
 void CG_AddRecallState(void);
 void CG_SaveRecallBuffer(void);
 void CG_DrawRecall(void);
