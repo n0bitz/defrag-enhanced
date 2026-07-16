@@ -125,7 +125,7 @@ consoleCommandStatus_t CG_Recall_f(void)
     viewer.visible = !viewer.visible;
     if (viewer.visible) {
         // KTODO: hack to go to most recent frame
-        viewer.cursor = 0;
+        viewer.cursor = history.write_idx;
         ScrubViewer(-1);
     }
 
