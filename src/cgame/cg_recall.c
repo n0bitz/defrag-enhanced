@@ -1,12 +1,12 @@
 #include "cgame.h"
 
-#define RECALL_CAPACITY (60 * 1000 / 8)  // 1 min worth at 125fps
-#define RECALL_FILE_PATH "temp/current.cd_01"
+#define RECALL_STATES_CAPACITY (60 * 1000 / 8)  // 1 min worth at 125fps
+#define RECALL_DEFAULT_HISTORY_PATH "temp/current.cd_01"
 
 typedef struct {
     int write_idx;  // index to append to
     int length;
-    saveState_t states[RECALL_CAPACITY];
+    saveState_t states[RECALL_STATES_CAPACITY];
 } recallRingBuffer_t;
 
 static recallRingBuffer_t history;
@@ -35,7 +35,7 @@ static void InitRecallBuffer(void)
     fileHandle_t recall_file;
 
     memset(&history, 0, sizeof(history));
-    trap_FS_FOpenFile(RECALL_FILE_PATH, &recall_file, FS_READ);
+    trap_FS_FOpenFile(RECALL_DEFAULT_HISTORY_PATH, &recall_file, FS_READ);
     if (recall_file) {
         trap_FS_Read(&history, sizeof(history), recall_file);
         trap_FS_FCloseFile(recall_file);
@@ -44,7 +44,7 @@ static void InitRecallBuffer(void)
 
 void CG_AddRecallState(void)
 {
-    if (viewer.visible) {
+    if (!cg_recallRecordingEnabled.integer || viewer.visible) {
         return;
     }
 
@@ -73,7 +73,7 @@ void CG_SaveRecallBuffer(void)
 {
     fileHandle_t recall_file;
 
-    trap_FS_FOpenFile(RECALL_FILE_PATH, &recall_file, FS_WRITE);
+    trap_FS_FOpenFile(RECALL_DEFAULT_HISTORY_PATH, &recall_file, FS_WRITE);
     if (!recall_file) {
         Com_Printf(LOG_ERROR "couldn't write to recall file\n");
         return;
@@ -133,25 +133,25 @@ consoleCommandStatus_t CG_Recall_f(void)
     return CON_CMD_HANDLED;
 }
 
-consoleCommandStatus_t IN_RecallForwardDown(void)
+consoleCommandStatus_t IN_RecallScrubForwardDown(void)
 {
     viewer.scrubbing_forward = qtrue;
     return CON_CMD_HANDLED;
 }
 
-consoleCommandStatus_t IN_RecallForwardUp(void)
+consoleCommandStatus_t IN_RecallScrubForwardUp(void)
 {
     viewer.scrubbing_forward = qfalse;
     return CON_CMD_HANDLED;
 }
 
-consoleCommandStatus_t IN_RecallRewindDown(void)
+consoleCommandStatus_t IN_RecallScrubBackwardDown(void)
 {
     viewer.scrubbing_backward = qtrue;
     return CON_CMD_HANDLED;
 }
 
-consoleCommandStatus_t IN_RecallRewindUp(void)
+consoleCommandStatus_t IN_RecallScrubBackwardUp(void)
 {
     viewer.scrubbing_backward = qfalse;
     return CON_CMD_HANDLED;
